@@ -49,7 +49,7 @@ $ vagrant init
 
 ###  安装box
 
-&emsp;&emsp; 如果你运行了[开始指南] (https://docs.vagrantup.com/v2/getting-started/)的命令，那么你已经在本机安装了一个box，你就不需要再次运行一下命令了。但是这部分仍然是值得阅读的，这样你就可以了解更多关于如何管理box的知识。  
+&emsp;&emsp; 如果你运行了[开始指南](https://docs.vagrantup.com/v2/getting-started/)的命令，那么你已经在本机安装了一个box，你就不需要再次运行一下命令了。但是这部分仍然是值得阅读的，这样你就可以了解更多关于如何管理box的知识。  
 &emsp;&emsp; Boxes 由Vagrant的`vagrant box add`命令添加。这个将box存储在一个指定命名的目录下，这个多个Vagrant的环境可以重复利用。如果你还未添加已给box，那么可以运行一下命令。  
 
 ```
