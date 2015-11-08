@@ -146,7 +146,7 @@ apt
 <?php phpinfo();?>
 ```
 
-&emsp;&emsp; 然后在本机浏览器打开http://localhost:8080/info.php，就会看到你想要看到的。
+&emsp;&emsp; 然后在本机浏览器打开[http://localhost:8080/info.php](http://localhost:8080/info.php)，就会看到你想要看到的。
 
 **翻译到此，剩下的就是关于Ansible的使用了，这些可以通过Ansible的官方文档来学习**
 
