@@ -1,0 +1,214 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Ansible 入门指南 | Mashuai&#39;s Notes</title>
+  <meta name="author" content="mashuai">
+  
+  <meta name="description" content="原文地址
+快速入门前言&amp;emsp;&amp;emsp; 现在你已经知道如何安装Ansible了，现在可以深入并开始使用Ansible的一些命令了。&amp;emsp;&amp;emsp; 我们开始展示的并不是Ansible强大的配置、部署、调度的功能。这些功能由其他章节要讲的Playbook来处理。&amp;emsp;&amp;emsp;">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="Ansible 入门指南"/>
+  <meta property="og:site_name" content="Mashuai&#39;s Notes"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.png" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Mashuai&#39;s Notes" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">Mashuai&#39;s Notes</a></h1>
+  <h2><a href="/"></a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div></header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2015-11-09T10:26:35.000Z"><a href="/2015/11/09/Ansible-入门指南/">2015-11-09</a></time>
+      
+      
+  
+    <h1 class="title">Ansible 入门指南</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p><a href="http://docs.ansible.com/ansible/intro_getting_started.html" target="_blank" rel="external">原文地址</a></p>
+<h2 id="快速入门">快速入门</h2><h3 id="前言">前言</h3><p>&emsp;&emsp; 现在你已经知道如何<a href="http://docs.ansible.com/ansible/intro_installation.html" target="_blank" rel="external">安装</a>Ansible了，现在可以深入并开始使用Ansible的一些命令了。<br>&emsp;&emsp; 我们开始展示的并不是Ansible强大的配置、部署、调度的功能。这些功能由其他章节要讲的Playbook来处理。<br>&emsp;&emsp; 这个章节是关于如何快速入门的。等你了解了Ansible的这些概念之后，就可以阅读<a href="http://docs.ansible.com/ansible/intro_adhoc.html" target="_blank" rel="external">特别命令简介</a>来学习更多细节，接着你就可以深入理解Playbook，并且浏览更多的有趣功能。</p>
+<h3 id="远程连接信息">远程连接信息</h3><p>&emsp;&emsp; 在我们开始学习之前，理解Ansible是如何通过SSH连接到远程服务器是很重要的。<br>&emsp;&emsp; 默认情况下，如果可以，Ansible 1.3 及其后续版本会使用原生的OpenSSh来连接远程服务器。这样就可以在~/.ssh/config下开启ControPersist(一个高性能的功能),Kerbos和其他选项，例如跳板机设置。然后，如果使用了Enterprise Linux 6(Red Hat Enterprise Linux 和其衍生版本，例如CentOS) 系统作为控制机，OpenSSH的版本可能过低导致无法开启ControlPersist功能。在这些操作系统中，Ansible将会回退到使用“paramiko”，他是OpenSSH的一个高质量的Python实现。如果你想使用像Kerberized SSH 等这样的功能，那么可以使用Federa，OSX或者Ubuntu作为你的控制机，直到你使用的平台有了更新的OpenSSH，或者你可以开启加速功能。<a href="http://docs.ansible.com/ansible/playbooks_acceleration.html" target="_blank" rel="external">加速功能</a>。<br>&emsp;&emsp; 如果使用的版本小于等于1.2，那么默认使用的就是paramiko，如果想要使用原生的SSH，那么需要加上-c ssh 选项或者再配置文件中配置。<br>&emsp;&emsp; 可能偶尔在某些机器上不支持SFTP协议，虽然这种情况很少，但是也可能发生，这个时候可以在<a href="http://docs.ansible.com/ansible/intro_configuration.html" target="_blank" rel="external">配置文件</a>中切换到SCP模式。<br>&emsp;&emsp; 当需要和远程主机会话是，Ansible默认假设你使用SSH keys。Ansible鼓励使用SSH 免密码登陆，但是使用密码登陆也是可以的，在使用的时候加上参数<code>--ask-pass</code>。如果需要使用sudo权限，那么也要提供<code>--ask-sudo-pass</code>参数。<br>&emsp;&emsp; 任何管理系统运行时离被管理的系统越近越好。虽然这是个常识，但是还是值得分享的。如果你在云端使用Ansible，那么就把Ansible运行在云端。在大多数情况下，它都比直接在公共网络上运行更好。<br>&emsp;&emsp; 作为一个高级话题，Ansible并不仅仅通过SSH连接主机。连接系统是可插拔的，有很多配置选项可以用来本地管理，例如管理chroot，lxc，jail container。一个叫做“Ansible-pull”的模式可以反转系统。通过配置好的git checkout 从中央存储库pull配置文件获取系统的“phone home”。</p>
+<h3 id="第一个命令">第一个命令</h3><p>&emsp;&emsp; 目前为止，已经安装好Ansible了，现在可以开始运行一些简单的命令了。<br>&emsp;&emsp; 编辑（或者创建）<code>/etc/ansible/hosts</code>文件，向其添加一个或者多个远程主机地址。本机的public ssh key 应该已经追加到远程主机的<code>authorized_keys</code>文件中。</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">192<span class="class">.168</span><span class="class">.1</span><span class="class">.50</span></span><br><span class="line"><span class="tag">aserver</span><span class="class">.example</span><span class="class">.org</span></span><br><span class="line"><span class="tag">bserver</span><span class="class">.example</span><span class="class">.org</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp; 这是一个清单文件，同样会再<a href="http://docs.ansible.com/ansible/intro_inventory.html" target="_blank" rel="external">主机清单</a>中介绍。<br>&emsp;&emsp; 假设你使用的是SSH授权方式，设置ssh angent 防止重复输入密码。</p>
+<figure class="highlight armasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="label">ssh</span>-agent <span class="keyword">bash</span><br><span class="line"></span><span class="label">ssh</span>-<span class="keyword">add </span>~/.ssh/id_rsa</span><br></pre></td></tr></table></figure>
+<p>(根据你的设置，你可能需要使用<code>--private-key</code>选项来制定一个pem文件)<br>&emsp;&emsp; 现在可以ping一下所有的主机了。</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ansible</span> <span class="literal">all</span> -m ping</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp; Ansible会想SSH那样使用你本机的用户名去连接远程机器，如果不想使用本机用户名，可以加上<code>-u</code>的选项。<br>&emsp;&emsp; 如果你想使用sudo权限，同样也可以将上<code>--sudo</code>选项。</p>
+<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"># <span class="keyword">as</span> bruce</span><br><span class="line">$ ansible all -<span class="keyword">m</span> ping -<span class="keyword">u</span> bruce</span><br><span class="line"># <span class="keyword">as</span> bruce sudoing to root</span><br><span class="line">$ ansible all -<span class="keyword">m</span> ping -<span class="keyword">u</span> bruce --sudo</span><br><span class="line"># <span class="keyword">as</span> bruce, sudoing to batman</span><br><span class="line">$ ansible all -<span class="keyword">m</span> ping -<span class="keyword">u</span> bruce --sudo --sudo-user batman</span><br><span class="line"></span><br><span class="line"># With latest <span class="keyword">version</span> of ansible `sudo` is deprecated <span class="keyword">so</span> <span class="keyword">use</span> become</span><br><span class="line"># <span class="keyword">as</span> bruce, sudoing to root</span><br><span class="line">$ ansible all -<span class="keyword">m</span> ping -<span class="keyword">u</span> bruce -b</span><br><span class="line"># <span class="keyword">as</span> bruce, sudoing to batman</span><br><span class="line">$ ansible all -<span class="keyword">m</span> ping -<span class="keyword">u</span> bruce -b --become-user batman</span><br></pre></td></tr></table></figure>
+<p>(如果你突然想改变sudo 用户，可以再配置文件中修改。传递给sudo的标记例如-H也可以在那修改。)</p>
+<p>&emsp;&emsp; 现在在你所有的节点上运行一个实时的命令。</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ansible all -<span class="tag">a</span> <span class="string">"/bin/echo hello"</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp; 太棒了，刚刚通过Ansible与远程主机会话了。很快就可以阅读<a href="http://docs.ansible.com/ansible/intro_adhoc.html" target="_blank" rel="external">更多命令介绍</a>来学习更多的实际例子，浏览各个模块都可以做什么，以及学习Ansible <a href="http://docs.ansible.com/ansible/playbooks.html" target="_blank" rel="external">Playbooks</a>的语法。Ansible不仅仅只能用来运行命令，他还有强大的配置管理系统和部署功能。还有许多需要学习的知识，但是你现在已经有一个完全可以运行的环境了。</p>
+<h3 id="主机密钥检查">主机密钥检查</h3><p>&emsp;&emsp; Ansible 1.2.1 及其之后的版本，默认是有主机密钥检查功能的。<br>&emsp;&emsp; 如果远程主机成新安装并且在<code>know_hosts</code>下有一个不同的key，直到修复之前，Ansible会一直返回错误。如果主机没有在<code>know_hosts</code>文件中，那么会出现提示来确认密钥。这样就会有一个你不希望的提示。<br>&emsp;&emps; 如果你知道这个功能的影响，并且希望关闭这个功能，可以修改<code>/etc/ansible/ansible.cfg</code>或者是<code>~/.ansible.cfg</code>来关闭这个功能。</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">[default]</span></span><br><span class="line"><span class="setting">host_key_checking = <span class="value"><span class="keyword">False</span></span></span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp; 同样也可以通过环境变量来修改。</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="keyword">export</span> ANSIBLE_HOST_KEY_CHECKING=<span class="keyword">False</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp; 同时要注意主机密钥检查再paramiko模式中是很慢的，所以如果要使用这个功能最好使用ssh模式。<br>&emsp;&emsp; 除非Ansible的任务被标记为”no_log:True”，否则Ansible会再远程注意的syslog中记录一些有用的信息。这个稍后再做解释。<br>&emsp;&emsp; 如果要再本机开启log可以查看<a href="http://docs.ansible.com/ansible/intro_configuration.html" target="_blank" rel="external">配置章节</a>来设置“log_path”开启。企业用户可能会对<a href="http://docs.ansible.com/ansible/tower.html" target="_blank" rel="external">Ansible Tower</a>。Tower提供了一个健壮的数据库记录日志的功能，这样就可以随时通过图形界面或者REST API 来查看主机，项目，特殊的列表的日志。</p>
+
+      
+    </div>
+    <footer>
+      
+        
+        
+  
+  <div class="tags">
+    <a href="/tags/Ansible/">Ansible</a>, <a href="/tags/Translate/">Translate</a>
+  </div>
+
+        
+  <div class="addthis addthis_toolbox addthis_default_style">
+    
+      <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+    
+    
+      <a class="addthis_button_tweet"></a>
+    
+    
+      <a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
+    
+    
+      <a class="addthis_button_pinterest_pinit" pi:pinit:layout="horizontal"></a>
+    
+    <a class="addthis_counter addthis_pill_style"></a>
+  </div>
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js"></script>
+
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+  
+</section>
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:mashuai.github.io">
+  </form>
+</div>
+
+  
+
+  
+<div class="widget tag">
+  <h3 class="title">标签</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/Ansible/">Ansible</a><small>2</small></li>
+  
+    <li><a href="/tags/Architecture/">Architecture</a><small>1</small></li>
+  
+    <li><a href="/tags/Go/">Go</a><small>3</small></li>
+  
+    <li><a href="/tags/HTTP/">HTTP</a><small>1</small></li>
+  
+    <li><a href="/tags/HTTP-2/">HTTP/2</a><small>1</small></li>
+  
+    <li><a href="/tags/Middleware/">Middleware</a><small>1</small></li>
+  
+    <li><a href="/tags/Translate/">Translate</a><small>5</small></li>
+  
+    <li><a href="/tags/Vagrant/">Vagrant</a><small>2</small></li>
+  
+  </ul>
+</div>
+
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2015 mashuai
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+<script type="text/javascript">
+var disqus_shortname = 'jabfor';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-48348924-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+</body>
+</html>

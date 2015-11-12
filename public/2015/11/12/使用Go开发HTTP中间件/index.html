@@ -1,0 +1,240 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>使用Go开发HTTP中间件 | Mashuai&#39;s Notes</title>
+  <meta name="author" content="mashuai">
+  
+  <meta name="description" content="原文地址
+&amp;emsp;&amp;emsp; 再web开发的背景下，“中间件”通常意思是“包装原始应用并添加一些额外的功能的应用的一部分”。这个概念似乎总是不被人理解，但是我认为中间件非常棒。&amp;emsp;&amp;emsp; 首先，一个好的中间件有一个责任就是可插拔并且自足。这就意味着你可以在接口级别嵌入你的中间件他">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="使用Go开发HTTP中间件"/>
+  <meta property="og:site_name" content="Mashuai&#39;s Notes"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.png" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Mashuai&#39;s Notes" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">Mashuai&#39;s Notes</a></h1>
+  <h2><a href="/"></a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div></header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2015-11-12T04:07:49.000Z"><a href="/2015/11/12/使用Go开发HTTP中间件/">2015-11-12</a></time>
+      
+      
+  
+    <h1 class="title">使用Go开发HTTP中间件</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p><a href="https://justinas.org/writing-http-middleware-in-go/" target="_blank" rel="external">原文地址</a></p>
+<p>&emsp;&emsp; 再web开发的背景下，“中间件”通常意思是“包装原始应用并添加一些额外的功能的应用的一部分”。这个概念似乎总是不被人理解，但是我认为中间件非常棒。<br>&emsp;&emsp; 首先，一个好的中间件有一个责任就是可插拔并且自足。这就意味着你可以在接口级别嵌入你的中间件他就能直接运行。它不会影响你编码方式，不是框架，仅仅是你请求处理里面的一层而已。完全没必要重写你的代码，如果你想使用中间件的一个功能，你就帮他插入到那里，如果不想使用了，就可以直接移除。<br>&emsp;&emsp; 纵观Go语言，中间件是非常普遍的，即使在标准库中。虽然开始的时候不会那么明显，在标准库<code>net/http</code>中的函数<code>StripText</code>或者<code>TimeoutHandler</code>就是我们要定义和的中间件的样子，处理请求和相应的时候他们包装你的handler，并处理一些额外的步骤。<br>&emsp;&emsp; 我最近写的Go包<a href="https://github.com/justinas/nosurf" target="_blank" rel="external">nosurf</a>同样也是个中间件。我特意将他从头开始设计。在大多数情况下，你不需要在应用层担心CSRF攻击，nosurf像其他的中间件一样可以自足，并且和<code>net/http</code>的接口无缝衔接。<br>&emsp;&emsp; 同样你还可以使用中间件做：</p>
+<ul>
+<li>隐藏长度防止缓冲攻击</li>
+<li>速度限制</li>
+<li>屏蔽爬虫</li>
+<li>提供调试信息</li>
+<li>添加HSTS，X-Frame-Options头</li>
+<li>从错误中恢复</li>
+<li>等等</li>
+</ul>
+<h3 id="编写一个简单的中间件">编写一个简单的中间件</h3><p>&emsp;&emsp; 我们的第一个例子是写一个只允许一个域名下的用户访问的中间件，通过HTTP的<code>HOST</code>header实现。这样的中间件可以防止<a href="http://www.skeletonscribe.net/2013/05/practical-http-host-header-attacks.html" target="_blank" rel="external">主机欺骗攻击</a>。</p>
+<h3 id="类型的机构">类型的机构</h3><p>&emsp;&emsp; 首先我们定义一个结构体，叫做<code>SingleHost</code></p>
+<figure class="highlight elm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="typedef"><span class="keyword">type</span> <span class="type">SingleHost</span> struct <span class="container">&#123;</span><br><span class="line">    handler     http.<span class="type">Handler</span></span><br><span class="line">    allowedHost string</span><br><span class="line">&#125;</span></span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp; 它只包含两个field。</p>
+<ul>
+<li>如果是一个可用的Host，那么我们会调用嵌入的handler。</li>
+<li>allowedHost 就是允许的Host。<br>&emsp;&emsp; 因为我们将其首字母小写，因此他们只对本包可见。我们需要给它定义已给构造函数。</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">func NewSingleHost(<span class="operator"><span class="keyword">handler</span> <span class="keyword">http</span>.<span class="keyword">Handler</span>, allowedHost <span class="keyword">string</span>) *SingleHost &#123;</span><br><span class="line">    <span class="keyword">return</span> &amp;SingleHost&#123;<span class="keyword">handler</span>: <span class="keyword">handler</span>, allowedHost: allowedHost&#125;</span><br><span class="line">&#125;</span></span><br></pre></td></tr></table></figure>
+<h3 id="请求处理">请求处理</h3><p>&emsp;&emsp; 现在需要实现真正的逻辑功能了。想要实现<code>http.Handler</code>，我们只需要实现他的一个方法。</p>
+<figure class="highlight elm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="typedef"><span class="keyword">type</span> <span class="type">Handler</span> interface <span class="container">&#123;</span><br><span class="line">        <span class="type">ServeHTTP</span>(<span class="type">ResponseWriter</span>, *<span class="type">Request</span>)</span><br><span class="line">&#125;</span></span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp; 实现如下：</p>
+<figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *SingleHost)</span> <span class="title">ServeHTTP</span><span class="params">(w http.ResponseWriter, r *http.Request)</span> &#123;</span></span><br><span class="line">    host := r.Host</span><br><span class="line">    <span class="keyword">if</span> host == s.allowedHost &#123;</span><br><span class="line">        s.handler.ServeHTTP(w, r)</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        w.WriteHeader(<span class="number">403</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>ServeHTTP</code>只是检查请求的Host：</p>
+<ul>
+<li>如果Host和配置的allowed一直，那么调用handler的ServeHTTP。</li>
+<li>如果不一直返回403<br>&emsp;&emsp;对于后一种情况，不仅不会得到应答，设置不知道有这个请求。<br>&emsp;&emsp;现在我们已经开发哈了中间件，只需要将其插入到需要的地方。</li>
+</ul>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">singleHosted = <span class="function"><span class="title">NewSingleHost</span><span class="params">(myHandler, <span class="string">"example.com"</span>)</span></span></span><br><span class="line">http.<span class="function"><span class="title">ListenAndServe</span><span class="params">(<span class="string">":8080"</span>, singleHosted)</span></span></span><br></pre></td></tr></table></figure>
+<h3 id="另一种方式">另一种方式</h3><p>&emsp;&emsp; 我们刚刚写的那个中间件很简单，它只有15行代码。写这样的中间件，可以使用样板方法。由于Go支持函数为一等公民和闭包，并且有<code>http.HandlerFunc</code>包装函数，我们可以通过他创建一个中间件，而不是将其放入到一个结构体中。下面是这个中间件的写法。<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">func SingleHost(<span class="operator"><span class="keyword">handler</span> <span class="keyword">http</span>.<span class="keyword">Handler</span>, allowedHost <span class="keyword">string</span>) <span class="keyword">http</span>.<span class="keyword">Handler</span> &#123;</span><br><span class="line">    ourFunc := func(w <span class="keyword">http</span>.ResponseWriter, r *<span class="keyword">http</span>.Request) &#123;</span><br><span class="line">        host := r.Host</span><br><span class="line">        <span class="keyword">if</span> host == allowedHost &#123;</span><br><span class="line">            <span class="keyword">handler</span>.ServeHTTP(w, r)</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            w.WriteHeader(<span class="number">403</span>)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">http</span>.HandlerFunc(ourFunc)</span><br><span class="line">&#125;</span></span><br></pre></td></tr></table></figure></p>
+<p>&emsp;&emsp; 我们定义了一个简单的函数<code>SingleHost</code>，它包装了<code>Handler</code>和允许的Host，在其内部我们实现了一个跟上面中间件类似的功能。我们内部的函数就是一个闭包，因此他可以访问外部函数的变量。最终HandlerFunc让我们可以将其变为Handler。<br>&emsp;&emsp; 觉得是使用HandlerFunc还是自己实现一个http.Handler完全取决于你自己。对于简单的情况，一个简单的函数就完全够了。如果你的中间件越来越多，那么就可以考虑实现自己的结构并把它们分开。<br>&emsp;&emsp; 同时标准库同时使用了两种功能。<code>StripPrefix</code>使用的是HandlerFunc，TimeoutHandler使用的是自定义的结构体。</p>
+<h3 id="一个更复杂的例子">一个更复杂的例子</h3><p>&emsp;&emsp; 我们的<code>SingleHost</code>并不重要，我们只检测一个属性，要么将他传递给其他的handler，要么直接返回。然而存在这种情况，我们的程序需要对处理完进行后续处理。</p>
+<h3 id="添加数据是简单的">添加数据是简单的</h3><p>&emsp;&emsp; 如果只是想简单的添加数据，那么使用Write就可以了。</p>
+<figure class="highlight livecodeserver"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">type AppendMiddleware struct &#123;</span><br><span class="line">    handler <span class="keyword">http</span>.Handler</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func (<span class="operator">a</span> *AppendMiddleware) ServeHTTP(w <span class="keyword">http</span>.ResponseWriter, r *<span class="keyword">http</span>.Request) &#123;</span><br><span class="line">    <span class="operator">a</span>.handler.ServeHTTP(w, r)</span><br><span class="line">    w.Write([]<span class="keyword">byte</span>(<span class="string">"Middleware says hello."</span>))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp; 返回的结构肯定会包含<code>Middleware says hello.</code></p>
+<h3 id="问题">问题</h3><p>&emsp;&emsp; 但是操作其他的数据有点困难。例如我们想要在它前面添加数据而不是后面追加。如果我们在原Handler之前调用Write，那么将会失去控制，因为第一个Write已经将他写入了。<br>&emsp;&emsp; 通过其他方法修改原始输出，例如替换字符串，改变响应header，或者设置状态码都不会起作用，因为当handler返回的时候数据已经返回到客户端了。<br>&emsp;&emsp; 为了实现这个功能，我们需要一个特殊的ResponseWriter，他可以想buffer一样工作，收集数据，存储以备使用和修改。然后我们将这个ResponseWriter传递给handler，而不是传递真是的RW，这样在其之前我们已经修改了它了。<br>&emsp;&emsp; 幸运的是在标准库中有这样的一个工具。在<code>net/http/httptest</code>包里的ResponseRecorder能做所有我们需要的：保存状态码，一个响应header的map，将body放入byte 缓冲中。虽然它是再测试中中使用的，但是很服务我们的情况。</p>
+<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> ModifierMiddleware struct &#123;</span><br><span class="line">    handler http.Handler</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func (<span class="keyword">m</span> *ModifierMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) &#123;</span><br><span class="line">    rec := httptest.NewRecorder()</span><br><span class="line">    <span class="comment">// passing a ResponseRecorder instead of the original RW</span></span><br><span class="line">    <span class="keyword">m</span>.handler.ServeHTTP(rec, r)</span><br><span class="line">    <span class="comment">// after this finishes, we have the response recorded</span></span><br><span class="line">    <span class="comment">// and can modify it before copying it to the original RW</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// we copy the original headers first</span></span><br><span class="line">    <span class="keyword">for</span> k, v := <span class="keyword">range</span> rec.Header() &#123;</span><br><span class="line">        w.Header()[k] = v</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// and set an additional one</span></span><br><span class="line">    w.Header().<span class="keyword">Set</span>(<span class="string">"X-We-Modified-This"</span>, <span class="string">"Yup"</span>)</span><br><span class="line">    <span class="comment">// only then the status code, as this call writes out the headers </span></span><br><span class="line">    w.WriteHeader(418)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// The body hasn't been written (to the real RW) yet,</span></span><br><span class="line">    <span class="comment">// so we can prepend some data.</span></span><br><span class="line">    data := []byte(<span class="string">"Middleware says hello again. "</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// But the Content-Length might have been set already,</span></span><br><span class="line">    <span class="comment">// we should modify it by adding the length</span></span><br><span class="line">    <span class="comment">// of our own data.</span></span><br><span class="line">    <span class="comment">// Ignoring the error is fine here:</span></span><br><span class="line">    <span class="comment">// if Content-Length is empty or otherwise invalid,</span></span><br><span class="line">    <span class="comment">// Atoi() will return zero,</span></span><br><span class="line">    <span class="comment">// which is just what we'd want in that case.</span></span><br><span class="line">    clen, _ := strconv.Atoi(r.Header.<span class="literal">Get</span>(<span class="string">"Content-Length"</span>))</span><br><span class="line">    clen += len(data)</span><br><span class="line">    r.Header.<span class="keyword">Set</span>(<span class="string">"Content-Length"</span>, strconv.Itoa(clen))</span><br><span class="line"></span><br><span class="line">    <span class="comment">// finally, write out our data</span></span><br><span class="line">    w.Write(data)</span><br><span class="line">    <span class="comment">// then write out the original body</span></span><br><span class="line">    w.Write(rec.Body.Bytes())</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;最后僵尸我们中间件的输出：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="status">HTTP/1.1 <span class="number">418</span> I'm a teapot</span></span><br><span class="line"><span class="attribute">X-We-Modified-This</span>: <span class="string">Yup</span></span><br><span class="line"><span class="attribute">Content-Type</span>: <span class="string">text/plain; charset=utf-8</span></span><br><span class="line"><span class="attribute">Content-Length</span>: <span class="string">37</span></span><br><span class="line"><span class="attribute">Date</span>: <span class="string">Tue, 03 Sep 2013 18:41:39 GMT</span></span><br><span class="line"></span><br><span class="line"><span class="erlang-repl"><span class="variable">Middleware</span> <span class="function_or_atom">says</span> <span class="function_or_atom">hello</span> <span class="function_or_atom">again</span>. <span class="variable">Success</span><span class="exclamation_mark">!</span></span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这样就开启了一种新的可能，包装的handler完全手控制。</p>
+<h3 id="和其他handler分享数据">和其他handler分享数据</h3><p>&emsp;&emsp; 在其他例子中，中间件可能需要暴露一些信息给其他中间件或者应用本身。例如nosurf需要给其他用户访问CSRF token的权限。<br>&emsp;&emsp; 最简单是是使用一个map，但是通常不希望这样。它将http.Request 的指针作为key，其他数据作为value。下面是nosurf的例子，Go的map非线程安全，所以要自己是实现。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> csrfContext <span class="keyword">struct</span> &#123;</span><br><span class="line">    token <span class="typename">string</span></span><br><span class="line">    reason error</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> (</span><br><span class="line">    contextMap = <span class="built_in">make</span>(<span class="keyword">map</span>[*http.Request]*csrfContext)</span><br><span class="line">    cmMutex    = <span class="built_in">new</span>(sync.RWMutex)</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp; 数据由Token设置：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="func"><span class="keyword">func</span> <span class="title">Token</span><span class="params">(req *http.Request)</span></span> string &#123;</span><br><span class="line">    cmMutex.<span class="type">RLock</span>()</span><br><span class="line">    <span class="keyword">defer</span> cmMutex.<span class="type">RUnlock</span>()</span><br><span class="line"></span><br><span class="line">    ctx, ok := contextMap[req]</span><br><span class="line">    <span class="keyword">if</span> !ok &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">""</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> ctx.token</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;源码可以再nosurf的项目的<a href="https://github.com/justinas/nosurf/blob/master/context.go" target="_blank" rel="external">context.go</a>中找到。</p>
+
+      
+    </div>
+    <footer>
+      
+        
+        
+  
+  <div class="tags">
+    <a href="/tags/Go/">Go</a>, <a href="/tags/HTTP/">HTTP</a>, <a href="/tags/Middleware/">Middleware</a>
+  </div>
+
+        
+  <div class="addthis addthis_toolbox addthis_default_style">
+    
+      <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+    
+    
+      <a class="addthis_button_tweet"></a>
+    
+    
+      <a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
+    
+    
+      <a class="addthis_button_pinterest_pinit" pi:pinit:layout="horizontal"></a>
+    
+    <a class="addthis_counter addthis_pill_style"></a>
+  </div>
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js"></script>
+
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+  
+</section>
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:mashuai.github.io">
+  </form>
+</div>
+
+  
+
+  
+<div class="widget tag">
+  <h3 class="title">标签</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/Ansible/">Ansible</a><small>2</small></li>
+  
+    <li><a href="/tags/Architecture/">Architecture</a><small>1</small></li>
+  
+    <li><a href="/tags/Go/">Go</a><small>3</small></li>
+  
+    <li><a href="/tags/HTTP/">HTTP</a><small>1</small></li>
+  
+    <li><a href="/tags/HTTP-2/">HTTP/2</a><small>1</small></li>
+  
+    <li><a href="/tags/Middleware/">Middleware</a><small>1</small></li>
+  
+    <li><a href="/tags/Translate/">Translate</a><small>5</small></li>
+  
+    <li><a href="/tags/Vagrant/">Vagrant</a><small>2</small></li>
+  
+  </ul>
+</div>
+
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2015 mashuai
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+<script type="text/javascript">
+var disqus_shortname = 'jabfor';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-48348924-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+</body>
+</html>
