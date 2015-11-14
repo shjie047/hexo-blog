@@ -5,6 +5,7 @@ tags:
   - Translate
 ---
 
+
 [原文地址](http://sanatgersappa.blogspot.com/2013/11/creating-master-page-for-your-go-web-app.html)
 
 &emsp;&emsp; 大多数web app都有一个相同的布局。这个布局可能包含一个header或者footer，甚至可能包含一个导航菜单。Go的标准库提供一个简单的方式来创建这些基本元素，通过被不同的页面重用，创建出模板页的效果。
@@ -12,8 +13,8 @@ tags:
 &emsp;&emsp; 让我们来创建一个简单的包含两个view的web app，一个是 main 一个是about。这两个view都有相同的header和footer。
 &emsp;&emsp; header模板的代码如下：
 
-```
-{{define "header"}}
+``` Go
+{{ define "header" }}
 <!DOCTYPE html>
 <html>
     <head>
@@ -37,18 +38,20 @@ tags:
             </ul>
           </div>
         </nav>
-{{end}}
+{{ end }}
 ```
 
 &emsp;&emsp; footer模板的代码如下：
 
-```
-{{define "footer"}}
+
+``` Go
+{{ define "footer" }}
         <p class="navbar-text navbar-fixed-bottom">Go Rocks!</p>    
         <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
     </body>
 </html>
-{{end}}
+{{ end }}
+
 ```
 
 &emsp;&emsp; main 模板的代码如下：
@@ -119,4 +122,7 @@ func main() {
 ```
 
 &emsp;&emsp; 每一个模板页都有一个 `{{ define "name" }}`的命令来定义模板的名字。main和about页面通过`{{ template "name" }}`来包含header和footer。`.` 出入上下文来命名模板。现在，不管main和about页面如何执行，他们的页面都会包含header和footer。
-&emsp;&emsp; 
+&emsp;&emsp; 两个页面的结果如下：
+
+![main](https://raw.githubusercontent.com/mashuai/hexo-blog/master/goweb/main.png)  
+![about](https://raw.githubusercontent.com/mashuai/hexo-blog/master/goweb/about.png)  
