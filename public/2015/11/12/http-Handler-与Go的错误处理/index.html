@@ -1,0 +1,218 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>http.Handler 与Go的错误处理 | Mashuai&#39;s Notes</title>
+  <meta name="author" content="mashuai">
+  
+  <meta name="description" content="原文地址
+&amp;emsp;&amp;emsp; 在之前我写过一篇关于通过使用http.HandlerFunc来实现一个定制handler类型用来避免一些平常的错误的文章。func MyHandler(w http.ResponseWriter, r *http.Request)的签名经常可以看到。这是一个有用的">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="http.Handler 与Go的错误处理"/>
+  <meta property="og:site_name" content="Mashuai&#39;s Notes"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.png" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Mashuai&#39;s Notes" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">Mashuai&#39;s Notes</a></h1>
+  <h2><a href="/"></a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div></header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2015-11-12T13:24:57.000Z"><a href="/2015/11/12/http-Handler-与Go的错误处理/">2015-11-12</a></time>
+      
+      
+  
+    <h1 class="title">http.Handler 与Go的错误处理</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p><a href="http://elithrar.github.io/article/http-handler-error-handling-revisited/" target="_blank" rel="external">原文地址</a></p>
+<p>&emsp;&emsp; 在之前我写过一篇关于通过使用<code>http.HandlerFunc</code>来实现一个定制handler类型用来避免一些平常的错误的<a href="http://elithrar.github.io/article/custom-handlers-avoiding-globals/" target="_blank" rel="external">文章</a>。<code>func MyHandler(w http.ResponseWriter, r *http.Request)</code>的签名经常可以看到。这是一个有用的通用的包含一些基本功能的handler类型，但是和其他事情一样，也有一些不足：</p>
+<ul>
+<li>当你想要在一个handler中停止处理的时候，必须记得显示的调用一个return。这个在当你想要跑出一个从定向（301、302），未找到（404）或者服务器端错误（500）的状态的时候是很平常的。如果不这么做可能会引起一些微妙的错误（函数会继续执行），因为函数不需要一个返回值，编译器也不会警告你。</li>
+<li>不容易传递额外的参数（例如，数据库连接池，配置）。你最后不得不实用一系列的全局变量（不算太坏，但是跟踪他们会导致难以扩展）或者将他们存到请求上下文中，然后每次都从其取出。这样做很笨重。</li>
+<li>一直在不断的重复同样的语句。想要记录数据库包返回的错误？既可以再每个查询方法中调用<code>log.Printf</code>，也可以再每个handler中返回错误。如果你的handler可以返回给一个集中记录错误的函数，并且跑出一个500的错误就更好了。</li>
+</ul>
+<p>&emsp;&emsp; 我以前的方法中使用了<code>func(http.ResponseWriter, *http.Request)</code>签名。这已经被证明是一个简介的方式，但是有个奇怪的地方是，返回一个无错误的状态，例如，200,302,303往往是多余的，因为要么你已经在其他地方设置了，要么就是没用的。例如：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">func <span class="title">SomeHandler</span><span class="params">(w http.ResponseWriter, r *http.Request)</span> <span class="params">(<span class="keyword">int</span>, error)</span> </span>&#123;</span><br><span class="line">    db, err := someDBcall()</span><br><span class="line">    <span class="keyword">if</span> err != nil &#123;</span><br><span class="line">        <span class="comment">// This makes sense.</span></span><br><span class="line">        <span class="keyword">return</span> <span class="number">500</span>, err</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> user.LoggedIn &#123;</span><br><span class="line">        http.Redirect(w, r, <span class="string">"/dashboard"</span>, <span class="number">302</span>)</span><br><span class="line">        <span class="comment">// Superfluous! Our http.Redirect function handles the 302, not </span></span><br><span class="line">        <span class="comment">// our return value (which is effectively ignored).</span></span><br><span class="line">        <span class="keyword">return</span> <span class="number">302</span>, nil</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;看起来还行，但是我们可以做的更好</p>
+<h3 id="一些区别">一些区别</h3><p>&emsp;&emsp; 那么我们应该如何改进它？我们先列出代码：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line">package <span class="operator"><span class="keyword">handler</span></span><br><span class="line"></span><br><span class="line">// <span class="keyword">Error</span> represents a <span class="keyword">handler</span> <span class="keyword">error</span>. It provides methods <span class="keyword">for</span> a <span class="keyword">HTTP</span> <span class="keyword">status</span> </span><br><span class="line">// code <span class="keyword">and</span> embeds the built-<span class="keyword">in</span> <span class="keyword">error</span> <span class="keyword">interface</span>.</span><br><span class="line"><span class="keyword">type</span> <span class="keyword">Error</span> <span class="keyword">interface</span> &#123;</span><br><span class="line">    <span class="keyword">error</span></span><br><span class="line">    <span class="keyword">Status</span>() <span class="built_in">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// StatusError represents an <span class="keyword">error</span> <span class="keyword">with</span> an associated <span class="keyword">HTTP</span> <span class="keyword">status</span> code.</span><br><span class="line"><span class="keyword">type</span> StatusError <span class="keyword">struct</span> &#123;</span><br><span class="line">    Code <span class="built_in">int</span></span><br><span class="line">    Err  <span class="keyword">error</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// Allows StatusError <span class="keyword">to</span> satisfy the <span class="keyword">error</span> <span class="keyword">interface</span>.</span><br><span class="line">func (se StatusError) <span class="keyword">Error</span>() <span class="keyword">string</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> se.Err.<span class="keyword">Error</span>()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// <span class="keyword">Returns</span> our <span class="keyword">HTTP</span> <span class="keyword">status</span> code.</span><br><span class="line">func (se StatusError) <span class="keyword">Status</span>() <span class="built_in">int</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> se.Code</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// A (simple) example <span class="keyword">of</span> our application-wide configuration.</span><br><span class="line"><span class="keyword">type</span> Env <span class="keyword">struct</span> &#123;</span><br><span class="line">    DB   *<span class="keyword">sql</span>.DB</span><br><span class="line">    Port <span class="keyword">string</span></span><br><span class="line">    Host <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// The <span class="keyword">Handler</span> <span class="keyword">struct</span> that takes a configured Env <span class="keyword">and</span> a <span class="keyword">function</span> matching</span><br><span class="line">// our useful signature.</span><br><span class="line"><span class="keyword">type</span> <span class="keyword">Handler</span> <span class="keyword">struct</span> &#123;</span><br><span class="line">    *Env</span><br><span class="line">    H func(<span class="keyword">e</span> *Env, w <span class="keyword">http</span>.ResponseWriter, r *<span class="keyword">http</span>.Request) <span class="keyword">error</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// ServeHTTP allows our <span class="keyword">Handler</span> <span class="keyword">type</span> <span class="keyword">to</span> satisfy <span class="keyword">http</span>.<span class="keyword">Handler</span>.</span><br><span class="line">func (h <span class="keyword">Handler</span>) ServeHTTP(w <span class="keyword">http</span>.ResponseWriter, r *<span class="keyword">http</span>.Request) &#123;</span><br><span class="line">    err := h.H(h.Env, w, r)</span><br><span class="line">    <span class="keyword">if</span> err != nil &#123;</span><br><span class="line">        <span class="keyword">switch</span> <span class="keyword">e</span> := err.(<span class="keyword">type</span>) &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="keyword">Error</span>:</span><br><span class="line">            // We can retrieve the <span class="keyword">status</span> here <span class="keyword">and</span> write <span class="keyword">out</span> a specific</span><br><span class="line">            // <span class="keyword">HTTP</span> <span class="keyword">status</span> code.</span><br><span class="line">            <span class="keyword">log</span>.Printf(<span class="string">"HTTP %d - %s"</span>, <span class="keyword">e</span>.<span class="keyword">Status</span>(), <span class="keyword">e</span>)</span><br><span class="line">            <span class="keyword">http</span>.<span class="keyword">Error</span>(w, <span class="keyword">e</span>.<span class="keyword">Error</span>(), <span class="keyword">e</span>.<span class="keyword">Status</span>())</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            // <span class="keyword">Any</span> <span class="keyword">error</span> types we don<span class="string">'t specifically look out for default</span><br><span class="line">            // to serving a HTTP 500</span><br><span class="line">            http.Error(w, http.StatusText(http.StatusInternalServerError),</span><br><span class="line">                http.StatusInternalServerError)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span></span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp; 上面的代码不言自明，但是要说明一下一些突出的观点：</p>
+<ul>
+<li>我们自定义了一个<code>Error</code>类型（接口），他内嵌了Go的内建的error接口，同时提供了一个<code>Status() int</code>方法。</li>
+<li>我们提供了一个简单的<code>StatusError</code>类型（结构体），它满足<code>handler.Error</code>的接口。StatusError接受一个HTTP的状态码（int类型），一个可以让我们包装错误用来记录或者查询的error类型。</li>
+<li>我们的<code>ServeHTTP</code>方法包好了一个”e := err.(type)”的类型断言，它可以测试我们需要处理的错误，允许我们处理那些特别的错误。在这个例子中，他是只是一个<code>handler.Error</code>类型。其他的错误，例如其他包中的错误想net.Error，或者其他我们定义的额外的错误，如果想要检查，同样也可以检查。</li>
+</ul>
+<p>&emsp;&emsp; 如果我们不想捕捉那些错误，那么<code>default</code>将会默认捕捉到。记住一点，<code>ServeHTTP</code>可以使我们的Handler类型满足http.Handler接口，这样他就可以在任何使用http.Handler的地方使用了，例如Go的net/http包或者所有的其他的第三方框架。这样使得定制的handler更有用，他们用起来很灵活。<br>&emsp;&emsp; 注意 net 包处理事情很简单。它又一个net.Error的接口，内嵌了内建的error接口。一些具体的类型实现了它。函数返回的具体类型跟错误的类型相同（DNS错误，解析错误等）。再datastore 包中定义的DBError有一个Query() string 方法，可以很好的解释。</p>
+<h3 id="所有示例">所有示例</h3><p>&emsp;&emsp; 它最后是什么样子的？我们是否可以将其分到不同的包中？</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><span class="line">package <span class="operator"><span class="keyword">handler</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">"net/http"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">// <span class="keyword">Error</span> represents a <span class="keyword">handler</span> <span class="keyword">error</span>. It provides methods <span class="keyword">for</span> a <span class="keyword">HTTP</span> <span class="keyword">status</span> </span><br><span class="line">// code <span class="keyword">and</span> embeds the built-<span class="keyword">in</span> <span class="keyword">error</span> <span class="keyword">interface</span>.</span><br><span class="line"><span class="keyword">type</span> <span class="keyword">Error</span> <span class="keyword">interface</span> &#123;</span><br><span class="line">    <span class="keyword">error</span></span><br><span class="line">    <span class="keyword">Status</span>() <span class="built_in">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// StatusError represents an <span class="keyword">error</span> <span class="keyword">with</span> an associated <span class="keyword">HTTP</span> <span class="keyword">status</span> code.</span><br><span class="line"><span class="keyword">type</span> StatusError <span class="keyword">struct</span> &#123;</span><br><span class="line">    Code <span class="built_in">int</span></span><br><span class="line">    Err  <span class="keyword">error</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// Allows StatusError <span class="keyword">to</span> satisfy the <span class="keyword">error</span> <span class="keyword">interface</span>.</span><br><span class="line">func (se StatusError) <span class="keyword">Error</span>() <span class="keyword">string</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> se.Err.<span class="keyword">Error</span>()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// <span class="keyword">Returns</span> our <span class="keyword">HTTP</span> <span class="keyword">status</span> code.</span><br><span class="line">func (se StatusError) <span class="keyword">Status</span>() <span class="built_in">int</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> se.Code</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// A (simple) example <span class="keyword">of</span> our application-wide configuration.</span><br><span class="line"><span class="keyword">type</span> Env <span class="keyword">struct</span> &#123;</span><br><span class="line">    DB   *<span class="keyword">sql</span>.DB</span><br><span class="line">    Port <span class="keyword">string</span></span><br><span class="line">    Host <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// The <span class="keyword">Handler</span> <span class="keyword">struct</span> that takes a configured Env <span class="keyword">and</span> a <span class="keyword">function</span> matching</span><br><span class="line">// our useful signature.</span><br><span class="line"><span class="keyword">type</span> <span class="keyword">Handler</span> <span class="keyword">struct</span> &#123;</span><br><span class="line">    *Env</span><br><span class="line">    H func(<span class="keyword">e</span> *Env, w <span class="keyword">http</span>.ResponseWriter, r *<span class="keyword">http</span>.Request) <span class="keyword">error</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// ServeHTTP allows our <span class="keyword">Handler</span> <span class="keyword">type</span> <span class="keyword">to</span> satisfy <span class="keyword">http</span>.<span class="keyword">Handler</span>.</span><br><span class="line">func (h <span class="keyword">Handler</span>) ServeHTTP(w <span class="keyword">http</span>.ResponseWriter, r *<span class="keyword">http</span>.Request) &#123;</span><br><span class="line">    err := h.H(h.Env, w, r)</span><br><span class="line">    <span class="keyword">if</span> err != nil &#123;</span><br><span class="line">        <span class="keyword">switch</span> <span class="keyword">e</span> := err.(<span class="keyword">type</span>) &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="keyword">Error</span>:</span><br><span class="line">            // We can retrieve the <span class="keyword">status</span> here <span class="keyword">and</span> write <span class="keyword">out</span> a specific</span><br><span class="line">            // <span class="keyword">HTTP</span> <span class="keyword">status</span> code.</span><br><span class="line">            <span class="keyword">log</span>.Printf(<span class="string">"HTTP %d - %s"</span>, <span class="keyword">e</span>.<span class="keyword">Status</span>(), <span class="keyword">e</span>)</span><br><span class="line">            <span class="keyword">http</span>.<span class="keyword">Error</span>(w, <span class="keyword">e</span>.<span class="keyword">Error</span>(), <span class="keyword">e</span>.<span class="keyword">Status</span>())</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            // <span class="keyword">Any</span> <span class="keyword">error</span> types we don<span class="string">'t specifically look out for default</span><br><span class="line">            // to serving a HTTP 500</span><br><span class="line">            http.Error(w, http.StatusText(http.StatusInternalServerError),</span><br><span class="line">                http.StatusInternalServerError)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func GetIndex(env *Env, w http.ResponseWriter, r *http.Request) error &#123;</span><br><span class="line">    users, err := env.DB.GetAllUsers()</span><br><span class="line">    if err != nil &#123;</span><br><span class="line">        // We return a status error here, which conveniently wraps the error</span><br><span class="line">        // returned from our DB queries. We can clearly define which errors </span><br><span class="line">        // are worth raising a HTTP 500 over vs. which might just be a HTTP </span><br><span class="line">        // 404, 403 or 401 (as appropriate). It'</span>s also <span class="keyword">clear</span> <span class="keyword">where</span> our </span><br><span class="line">        // <span class="keyword">handler</span> should <span class="keyword">stop</span> processing <span class="keyword">by</span> <span class="keyword">returning</span> early.</span><br><span class="line">        <span class="keyword">return</span> StatusError&#123;<span class="number">500</span>, err&#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    fmt.Fprintf(w, <span class="string">"%+v"</span>, <span class="keyword">users</span>)</span><br><span class="line">    <span class="keyword">return</span> nil</span><br><span class="line">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp; main包：</p>
+<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">package main</span><br><span class="line"></span><br><span class="line">import (</span><br><span class="line">    <span class="string">"net/http"</span></span><br><span class="line">    <span class="string">"github.com/you/somepkg/handler"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">func main() &#123;</span><br><span class="line">    <span class="keyword">db</span>, <span class="keyword">err</span> := sql.<span class="keyword">Open</span>(<span class="string">"connectionstringhere"</span>)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">err</span> != nil &#123;</span><br><span class="line">          <span class="keyword">log</span>.Fatal(<span class="keyword">err</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Initialise our app-wide environment with the services/info we need.</span></span><br><span class="line">    env := &amp;handler.Env&#123;</span><br><span class="line">        <span class="keyword">DB</span>: <span class="keyword">db</span>,</span><br><span class="line">        Port: os.Getenv(<span class="string">"PORT"</span>),</span><br><span class="line">        Host: os.Getenv(<span class="string">"HOST"</span>),</span><br><span class="line">        <span class="comment">// We might also have a custom log.Logger, our </span></span><br><span class="line">        <span class="comment">// template instance, and a config struct as fields </span></span><br><span class="line">        <span class="comment">// in our Env struct.</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Note that we're using http.Handle, not http.HandleFunc. The </span></span><br><span class="line">    <span class="comment">// latter only accepts the http.HandlerFunc type, which is not </span></span><br><span class="line">    <span class="comment">// what we have here.</span></span><br><span class="line">    http.Handle(<span class="string">"/"</span>, handler.Handler&#123;env, handler.GetIndex&#125;)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Logs the error if ListenAndServe fails.</span></span><br><span class="line">    <span class="keyword">log</span>.Fatal(http.ListenAndServe(<span class="string">":8000"</span>, nil))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp; 在实际使用时，会将handler和Env放入不同的包中，这里只是为了简单放在了同一个包中。</p>
+
+      
+    </div>
+    <footer>
+      
+        
+        
+  
+  <div class="tags">
+    <a href="/tags/Go/">Go</a>, <a href="/tags/Translate/">Translate</a>
+  </div>
+
+        
+  <div class="addthis addthis_toolbox addthis_default_style">
+    
+      <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+    
+    
+      <a class="addthis_button_tweet"></a>
+    
+    
+      <a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
+    
+    
+      <a class="addthis_button_pinterest_pinit" pi:pinit:layout="horizontal"></a>
+    
+    <a class="addthis_counter addthis_pill_style"></a>
+  </div>
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js"></script>
+
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+  
+</section>
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:mashuai.github.io">
+  </form>
+</div>
+
+  
+
+  
+<div class="widget tag">
+  <h3 class="title">标签</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/Ansible/">Ansible</a><small>2</small></li>
+  
+    <li><a href="/tags/Architecture/">Architecture</a><small>1</small></li>
+  
+    <li><a href="/tags/Go/">Go</a><small>4</small></li>
+  
+    <li><a href="/tags/HTTP/">HTTP</a><small>1</small></li>
+  
+    <li><a href="/tags/HTTP-2/">HTTP/2</a><small>1</small></li>
+  
+    <li><a href="/tags/Middleware/">Middleware</a><small>1</small></li>
+  
+    <li><a href="/tags/Translate/">Translate</a><small>6</small></li>
+  
+    <li><a href="/tags/Vagrant/">Vagrant</a><small>2</small></li>
+  
+  </ul>
+</div>
+
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2015 mashuai
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+<script type="text/javascript">
+var disqus_shortname = 'jabfor';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-48348924-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+</body>
+</html>
