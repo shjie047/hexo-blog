@@ -1,222 +1,277 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
   
   <title>Go Web 架构 | Mashuai&#39;s Notes</title>
-  <meta name="author" content="mashuai">
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="原文地址
 &amp;emsp;&amp;emsp; 使用Golang来创建Web项目是一件很麻烦的事情。如果你使用Rails，那么你可能不会有这个感触。我在Refer Madness中使用了下面这个架构。
-1234567-public/-views/-models/-utils/-controllers/-web/">
+1234567-public/-views/-models/-utils/-controllers/-web/-main.go
+&amp;emsp;&amp;emsp; 我将打破这个体系，介绍各个目录的作用。在每个目录下，文件">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Go Web 架构">
+<meta property="og:url" content="https://mashuai.github.io/2015/11/10/Go-Web-架构/index.html">
+<meta property="og:site_name" content="Mashuai's Notes">
+<meta property="og:description" content="原文地址
+&amp;emsp;&amp;emsp; 使用Golang来创建Web项目是一件很麻烦的事情。如果你使用Rails，那么你可能不会有这个感触。我在Refer Madness中使用了下面这个架构。
+1234567-public/-views/-models/-utils/-controllers/-web/-main.go
+&amp;emsp;&amp;emsp; 我将打破这个体系，介绍各个目录的作用。在每个目录下，文件">
+<meta property="og:updated_time" content="2016-07-22T15:04:44.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Go Web 架构">
+<meta name="twitter:description" content="原文地址
+&amp;emsp;&amp;emsp; 使用Golang来创建Web项目是一件很麻烦的事情。如果你使用Rails，那么你可能不会有这个感触。我在Refer Madness中使用了下面这个架构。
+1234567-public/-views/-models/-utils/-controllers/-web/-main.go
+&amp;emsp;&amp;emsp; 我将打破这个体系，介绍各个目录的作用。在每个目录下，文件">
+  
+    <link rel="alternative" href="/atom.xml" title="Mashuai&#39;s Notes" type="application/atom+xml">
   
   
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-
-  <meta property="og:title" content="Go Web 架构"/>
-  <meta property="og:site_name" content="Mashuai&#39;s Notes"/>
-
+    <link rel="icon" href="/favicon.png">
   
-    <meta property="og:image" content="undefined"/>
-  
-
-  <link href="/favicon.png" rel="icon">
-  <link rel="alternate" href="/atom.xml" title="Mashuai&#39;s Notes" type="application/atom+xml">
-  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
-  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css">
   
 
 </head>
-
-
 <body>
-  <header id="header" class="inner"><div class="alignleft">
-  <h1><a href="/">Mashuai&#39;s Notes</a></h1>
-  <h2><a href="/"></a></h2>
-</div>
-<nav id="main-nav" class="alignright">
-  <ul>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Mashuai&#39;s Notes</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://mashuai.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Go-Web-架构" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/11/10/Go-Web-架构/" class="article-date">
+  <time datetime="2015-11-10T11:01:21.000Z" itemprop="datePublished">2015-11-10</time>
+</a>
     
-      <li><a href="/">Home</a></li>
+  </div>
+  <div class="article-inner">
     
-      <li><a href="/archives">Archives</a></li>
     
-  </ul>
-  <div class="clearfix"></div>
-</nav>
-<div class="clearfix"></div></header>
-  <div id="content" class="inner">
-    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+      <header class="article-header">
+        
   
-  <div class="post-content">
-    <header>
-      
-        <div class="icon"></div>
-        <time datetime="2015-11-10T11:01:21.000Z"><a href="/2015/11/10/Go-Web-架构/">2015-11-10</a></time>
-      
-      
-  
-    <h1 class="title">Go Web 架构</h1>
+    <h1 class="article-title" itemprop="name">
+      Go Web 架构
+    </h1>
   
 
-    </header>
-    <div class="entry">
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
       
         <p><a href="https://larry-price.com/blog/2015/06/25/architecture-for-a-golang-web-app" target="_blank" rel="external">原文地址</a></p>
 <p>&emsp;&emsp; 使用Golang来创建Web项目是一件很麻烦的事情。如果你使用Rails，那么你可能不会有这个感触。我在<a href="https://www.refer-madness.com/" target="_blank" rel="external">Refer Madness</a>中使用了下面这个架构。</p>
-<figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">-<span class="ruby">public/</span><br><span class="line"></span>-<span class="ruby">views/</span><br><span class="line"></span>-<span class="ruby">models/</span><br><span class="line"></span>-<span class="ruby">utils/</span><br><span class="line"></span>-<span class="ruby">controllers/</span><br><span class="line"></span>-<span class="ruby">web/</span><br><span class="line"></span>-<span class="ruby">main.go</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">-public/</div><div class="line">-views/</div><div class="line">-models/</div><div class="line">-utils/</div><div class="line">-controllers/</div><div class="line">-web/</div><div class="line">-main.go</div></pre></td></tr></table></figure>
 <p>&emsp;&emsp; 我将打破这个体系，介绍各个目录的作用。在每个目录下，文件只能访问其同级或者上一级。这就意味着<code>utils</code>只能访问他自己和<code>models</code>，<code>web</code>只能访问它自己，<code>controllers</code>，<code>utils</code>，<code>models</code>。<code>models</code>只能访问它自己。我这么做是为了让层次清晰，防止出现递归依赖。现在来分析每一个目录，文件的作用。</p>
-<h4 id="main-go">main.go</h4><p>&emsp;&emsp; <code>main.go</code>是创建依赖，获取环境变量，启动服务的主要文件。下面是它的实例。</p>
-<figure class="highlight aspectj"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">  <span class="string">"github.com/larryprice/refermadness/utils"</span></span><br><span class="line">  <span class="string">"github.com/larryprice/refermadness/web"</span></span><br><span class="line">  <span class="string">"github.com/stretchr/graceful"</span></span><br><span class="line">  <span class="string">"os"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function">func <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  isDevelopment := os.Getenv(<span class="string">"ENVIRONMENT"</span>) == <span class="string">"development"</span></span><br><span class="line">  dbURL := os.Getenv(<span class="string">"MONGOLAB_URI"</span>)</span><br><span class="line">  <span class="keyword">if</span> isDevelopment &#123;</span><br><span class="line">    dbURL = os.Getenv(<span class="string">"DB_PORT_27017_TCP_ADDR"</span>)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  dbAccessor := utils.NewDatabaseAccessor(dbURL, os.Getenv(<span class="string">"DATABASE_NAME"</span>), 0)</span><br><span class="line">  cuAccessor := utils.NewCurrentUserAccessor(1)</span><br><span class="line">  s := web.NewServer(*dbAccessor, *cuAccessor, os.Getenv(<span class="string">"GOOGLE_OAUTH2_CLIENT_ID"</span>),</span><br><span class="line">    os.Getenv(<span class="string">"GOOGLE_OAUTH2_CLIENT_SECRET"</span>), os.Getenv(<span class="string">"SESSION_SECRET"</span>),</span><br><span class="line">    isDevelopment, os.Getenv(<span class="string">"GOOGLE_ANALYTICS_KEY"</span>))</span><br><span class="line"></span><br><span class="line">  port := os.Getenv(<span class="string">"PORT"</span>)</span><br><span class="line">  <span class="keyword">if</span> port == <span class="string">""</span> &#123;</span><br><span class="line">    port = <span class="string">"3000"</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  graceful.Run(<span class="string">":"</span>+port, <span class="number">0</span>, s)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="main-go"><a href="#main-go" class="headerlink" title="main.go"></a>main.go</h4><p>&emsp;&emsp; <code>main.go</code>是创建依赖，获取环境变量，启动服务的主要文件。下面是它的实例。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line">package main</div><div class="line"></div><div class="line">import (</div><div class="line">  &quot;github.com/larryprice/refermadness/utils&quot;</div><div class="line">  &quot;github.com/larryprice/refermadness/web&quot;</div><div class="line">  &quot;github.com/stretchr/graceful&quot;</div><div class="line">  &quot;os&quot;</div><div class="line">)</div><div class="line"></div><div class="line">func main() &#123;</div><div class="line">  isDevelopment := os.Getenv(&quot;ENVIRONMENT&quot;) == &quot;development&quot;</div><div class="line">  dbURL := os.Getenv(&quot;MONGOLAB_URI&quot;)</div><div class="line">  if isDevelopment &#123;</div><div class="line">    dbURL = os.Getenv(&quot;DB_PORT_27017_TCP_ADDR&quot;)</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  dbAccessor := utils.NewDatabaseAccessor(dbURL, os.Getenv(&quot;DATABASE_NAME&quot;), 0)</div><div class="line">  cuAccessor := utils.NewCurrentUserAccessor(1)</div><div class="line">  s := web.NewServer(*dbAccessor, *cuAccessor, os.Getenv(&quot;GOOGLE_OAUTH2_CLIENT_ID&quot;),</div><div class="line">    os.Getenv(&quot;GOOGLE_OAUTH2_CLIENT_SECRET&quot;), os.Getenv(&quot;SESSION_SECRET&quot;),</div><div class="line">    isDevelopment, os.Getenv(&quot;GOOGLE_ANALYTICS_KEY&quot;))</div><div class="line"></div><div class="line">  port := os.Getenv(&quot;PORT&quot;)</div><div class="line">  if port == &quot;&quot; &#123;</div><div class="line">    port = &quot;3000&quot;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  graceful.Run(&quot;:&quot;+port, 0, s)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>&emsp;&emsp; 因为<code>main.go</code>实在最低的层级，所以它可以访问所有的目录：在这个例子里是<code>web</code>和<code>utils</code>。在这里获取了所有的环境变量并把它们注入到合适的地方。在<code>main.go</code>中创建了服务器，注入依赖，并且在配置的端口启动服务器。</p>
-<h4 id="web">web</h4><p>&emsp;&emsp; <code>web</code>目录下是主要的服务代码，同时也包括了中间件代码。下面是<code>web</code>目录的内部结构：</p>
-<figure class="highlight 1c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">-web/</span><br><span class="line"><span class="string">|-middleware/</span></span><br><span class="line"><span class="string">|-server.go</span></span><br></pre></td></tr></table></figure>
+<h4 id="web"><a href="#web" class="headerlink" title="web"></a>web</h4><p>&emsp;&emsp; <code>web</code>目录下是主要的服务代码，同时也包括了中间件代码。下面是<code>web</code>目录的内部结构：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">-web/</div><div class="line">|-middleware/</div><div class="line">|-server.go</div></pre></td></tr></table></figure>
 <p>&emsp;&emsp; <code>server.go</code>包含了web server的定义。这个web server 创建了所有的web controller并且给negroni添加了中间件。下面是他的例子：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> web</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">  <span class="string">"github.com/codegangsta/negroni"</span></span><br><span class="line">  <span class="string">"github.com/goincremental/negroni-sessions"</span></span><br><span class="line">  <span class="string">"github.com/goincremental/negroni-sessions/cookiestore"</span></span><br><span class="line">  <span class="string">"github.com/gorilla/mux"</span></span><br><span class="line">  <span class="string">"github.com/larryprice/refermadness/controllers"</span></span><br><span class="line">  <span class="string">"github.com/larryprice/refermadness/utils"</span></span><br><span class="line">  <span class="string">"github.com/larryprice/refermadness/web/middleware"</span></span><br><span class="line">  <span class="string">"github.com/unrolled/secure"</span></span><br><span class="line">  <span class="string">"gopkg.in/unrolled/render.v1"</span></span><br><span class="line">  <span class="string">"html/template"</span></span><br><span class="line">  <span class="string">"net/http"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Server <span class="keyword">struct</span> &#123;</span><br><span class="line">  *negroni.Negroni</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">func</span> NewServer(dba utils.DatabaseAccessor, cua utils.CurrentUserAccessor, clientID, clientSecret,</span><br><span class="line">  sessionSecret <span class="typename">string</span>, isDevelopment <span class="typename">bool</span>, gaKey <span class="typename">string</span>) *Server &#123;</span><br><span class="line">  s := Server&#123;negroni.Classic()&#125;</span><br><span class="line">  session := utils.NewSessionManager()</span><br><span class="line">  basePage := utils.NewBasePageCreator(cua, gaKey)</span><br><span class="line">  renderer := render.New()</span><br><span class="line"></span><br><span class="line">  router := mux.NewRouter()</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">  accountController := controllers.NewAccountController(clientID, clientSecret, isDevelopment, session, dba, cua, basePage, renderer)</span><br><span class="line">  accountController.Register(router)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">  s.Use(sessions.Sessions(<span class="string">"refermadness"</span>, cookiestore.New([]<span class="typename">byte</span>(sessionSecret))))</span><br><span class="line">  s.Use(middleware.NewAuthenticator(dba, session, cua).Middleware())</span><br><span class="line">  s.UseHandler(router)</span><br><span class="line">  <span class="keyword">return</span> &amp;s</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div></pre></td><td class="code"><pre><div class="line">package web</div><div class="line"></div><div class="line">import (</div><div class="line">  &quot;github.com/codegangsta/negroni&quot;</div><div class="line">  &quot;github.com/goincremental/negroni-sessions&quot;</div><div class="line">  &quot;github.com/goincremental/negroni-sessions/cookiestore&quot;</div><div class="line">  &quot;github.com/gorilla/mux&quot;</div><div class="line">  &quot;github.com/larryprice/refermadness/controllers&quot;</div><div class="line">  &quot;github.com/larryprice/refermadness/utils&quot;</div><div class="line">  &quot;github.com/larryprice/refermadness/web/middleware&quot;</div><div class="line">  &quot;github.com/unrolled/secure&quot;</div><div class="line">  &quot;gopkg.in/unrolled/render.v1&quot;</div><div class="line">  &quot;html/template&quot;</div><div class="line">  &quot;net/http&quot;</div><div class="line">)</div><div class="line"></div><div class="line">type Server struct &#123;</div><div class="line">  *negroni.Negroni</div><div class="line">&#125;</div><div class="line"></div><div class="line">func NewServer(dba utils.DatabaseAccessor, cua utils.CurrentUserAccessor, clientID, clientSecret,</div><div class="line">  sessionSecret string, isDevelopment bool, gaKey string) *Server &#123;</div><div class="line">  s := Server&#123;negroni.Classic()&#125;</div><div class="line">  session := utils.NewSessionManager()</div><div class="line">  basePage := utils.NewBasePageCreator(cua, gaKey)</div><div class="line">  renderer := render.New()</div><div class="line"></div><div class="line">  router := mux.NewRouter()</div><div class="line"></div><div class="line">  // ...</div><div class="line"></div><div class="line">  accountController := controllers.NewAccountController(clientID, clientSecret, isDevelopment, session, dba, cua, basePage, renderer)</div><div class="line">  accountController.Register(router)</div><div class="line"></div><div class="line">  // ...</div><div class="line"></div><div class="line">  s.Use(sessions.Sessions(&quot;refermadness&quot;, cookiestore.New([]byte(sessionSecret))))</div><div class="line">  s.Use(middleware.NewAuthenticator(dba, session, cua).Middleware())</div><div class="line">  s.UseHandler(router)</div><div class="line">  return &amp;s</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>&emsp;&emsp; <code>Server</code>结构体是一个<code>negroni.Negroni</code>的web server，在这个文件里有对<code>utils</code>和其他第三方包的引用，创建了一个router，一些controller，并且将controller注册到当前router。同时也引入了必要的中间件。说到中间件，下面是它的代码：</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">package middleware</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">  <span class="string">"github.com/codegangsta/negroni"</span></span><br><span class="line">  <span class="string">"github.com/larryprice/refermadness/utils"</span></span><br><span class="line">  <span class="string">"net/http"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">type <span class="type">Database</span> <span class="class"><span class="keyword">struct</span> </span>&#123;</span><br><span class="line">  da utils.<span class="type">DatabaseAccessor</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="func"><span class="keyword">func</span> <span class="title">NewDatabase</span><span class="params">(da utils.DatabaseAccessor)</span></span> *<span class="type">Database</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> &amp;<span class="type">Database</span>&#123;da&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="func"><span class="keyword">func</span> <span class="params">(d *Database)</span></span> <span class="type">Middleware</span>() negroni.<span class="type">HandlerFunc</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="func"><span class="keyword">func</span><span class="params">(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc)</span></span> &#123;</span><br><span class="line">    reqSession := d.da.<span class="type">Clone</span>()</span><br><span class="line">    <span class="keyword">defer</span> reqSession.<span class="type">Close</span>()</span><br><span class="line">    d.da.<span class="type">Set</span>(r, reqSession)</span><br><span class="line">    next(rw, r)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">package middleware</div><div class="line"></div><div class="line">import (</div><div class="line">  &quot;github.com/codegangsta/negroni&quot;</div><div class="line">  &quot;github.com/larryprice/refermadness/utils&quot;</div><div class="line">  &quot;net/http&quot;</div><div class="line">)</div><div class="line"></div><div class="line">type Database struct &#123;</div><div class="line">  da utils.DatabaseAccessor</div><div class="line">&#125;</div><div class="line"></div><div class="line">func NewDatabase(da utils.DatabaseAccessor) *Database &#123;</div><div class="line">  return &amp;Database&#123;da&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">func (d *Database) Middleware() negroni.HandlerFunc &#123;</div><div class="line">  return func(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) &#123;</div><div class="line">    reqSession := d.da.Clone()</div><div class="line">    defer reqSession.Close()</div><div class="line">    d.da.Set(r, reqSession)</div><div class="line">    next(rw, r)</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>&emsp;&emsp; 这个是通过HTTP router访问数据库session的标注中间件。基本文件是从<a href="http://modocache.svbtle.com/restful-go" target="_blank" rel="external">Brian Gesiak’s blog post on RESTful Go</a>中得到，将其修改为适合我的文件。</p>
-<h4 id="controllers/">controllers/</h4><p>&emsp;&emsp; 这里的controller与Rails里的controller的概念很像。Controller注册自己的router，设置自己的函数调用。一个简短的例子如下：</p>
-<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line">package controllers</span><br><span class="line"></span><br><span class="line">import (</span><br><span class="line">  <span class="string">"encoding/json"</span></span><br><span class="line">  <span class="string">"errors"</span></span><br><span class="line">  <span class="string">"github.com/gorilla/mux"</span></span><br><span class="line">  <span class="string">"github.com/larryprice/refermadness/models"</span></span><br><span class="line">  <span class="string">"github.com/larryprice/refermadness/utils"</span></span><br><span class="line">  <span class="string">"gopkg.in/mgo.v2/bson"</span></span><br><span class="line">  <span class="string">"gopkg.in/unrolled/render.v1"</span></span><br><span class="line">  <span class="string">"html/template"</span></span><br><span class="line">  <span class="string">"net/http"</span></span><br><span class="line">  <span class="string">"strings"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> ServiceControllerImpl struct &#123;</span><br><span class="line">  currentUser utils.CurrentUserAccessor</span><br><span class="line">  basePage    utils.BasePageCreator</span><br><span class="line">  renderer    *render.Render</span><br><span class="line">  database    utils.DatabaseAccessor</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func NewServiceController(currentUser utils.CurrentUserAccessor, basePage utils.BasePageCreator,</span><br><span class="line">  renderer *render.Render, database utils.DatabaseAccessor) *ServiceControllerImpl &#123;</span><br><span class="line">  <span class="keyword">return</span> &amp;ServiceControllerImpl&#123;</span><br><span class="line">    currentUser: currentUser,</span><br><span class="line">    basePage:    basePage,</span><br><span class="line">    renderer:    renderer,</span><br><span class="line">    database:    database,</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func (<span class="keyword">sc</span> *ServiceControllerImpl) Register(router *mux.Router) &#123;</span><br><span class="line">  router.HandleFunc(<span class="string">"/service/&#123;id&#125;"</span>, <span class="keyword">sc</span>.single)</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> serviceResult struct &#123;</span><br><span class="line"><span class="comment">  *models.Service</span></span><br><span class="line">  RandomCode *models.ReferralCode</span><br><span class="line">  UserCode   *models.ReferralCode</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> servicePage struct &#123;</span><br><span class="line">  utils.BasePage</span><br><span class="line">  ResultString <span class="literal">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func (<span class="keyword">sc</span> *ServiceControllerImpl) single(w http.ResponseWriter, r *http.Request) &#123;</span><br><span class="line">  data, <span class="keyword">err</span> := <span class="keyword">sc</span>.<span class="literal">get</span>(w, r)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> len(r.Header[<span class="string">"Content-Type"</span>]) == 1 &amp;&amp; strings.Contains(r.Header[<span class="string">"Content-Type"</span>][0], <span class="string">"application/json"</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">err</span> != nil &#123;</span><br><span class="line">      <span class="keyword">sc</span>.renderer.JSON(w, http.StatusBadRequest, map[string]string&#123;</span><br><span class="line">        <span class="string">"error"</span>: <span class="keyword">err</span>.<span class="keyword">Error</span>(),</span><br><span class="line">      &#125;)</span><br><span class="line">      <span class="literal">return</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">sc</span>.renderer.JSON(w, http.StatusOK, data)</span><br><span class="line">    <span class="literal">return</span></span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> <span class="keyword">err</span> != nil &#123;</span><br><span class="line">    http.<span class="keyword">Error</span>(w, <span class="keyword">err</span>.<span class="keyword">Error</span>(), http.StatusBadRequest)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  resultString, _ := json.Marshal(data)</span><br><span class="line">  t, _ := template.ParseFiles(<span class="string">"views/layout.html"</span>, <span class="string">"views/service.html"</span>)</span><br><span class="line">  t.Execute(w, servicePage&#123;<span class="keyword">sc</span>.basePage.<span class="literal">Get</span>(r), <span class="literal">string</span>(resultString)&#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="utils/">utils/</h4><p>&emsp;&emsp; 在<code>utils</code>目录下的文件提供了一些底层功能用来支持其他的代码。在这个例子中，主要是定义一个结构体来访问请求的上下文，处理session，定义一个特别的页面来继承。下面是通过访问上下文设置用户的例子：</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">package utils</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">  <span class="string">"github.com/gorilla/context"</span></span><br><span class="line">  <span class="string">"github.com/larryprice/refermadness/models"</span></span><br><span class="line">  <span class="string">"net/http"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">type <span class="type">CurrentUserAccessor</span> <span class="class"><span class="keyword">struct</span> </span>&#123;</span><br><span class="line">  key int</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="func"><span class="keyword">func</span> <span class="title">NewCurrentUserAccessor</span><span class="params">(key int)</span></span> *<span class="type">CurrentUserAccessor</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> &amp;<span class="type">CurrentUserAccessor</span>&#123;key&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="func"><span class="keyword">func</span> <span class="params">(cua *CurrentUserAccessor)</span></span> <span class="type">Set</span>(r *http.<span class="type">Request</span>, user *models.<span class="type">User</span>) &#123;</span><br><span class="line">  context.<span class="type">Set</span>(r, cua.key, user)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="func"><span class="keyword">func</span> <span class="params">(cua *CurrentUserAccessor)</span></span> <span class="type">Clear</span>(r *http.<span class="type">Request</span>) &#123;</span><br><span class="line">  context.<span class="type">Delete</span>(r, cua.key)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="func"><span class="keyword">func</span> <span class="params">(cua *CurrentUserAccessor)</span></span> <span class="type">Get</span>(r *http.<span class="type">Request</span>) *models.<span class="type">User</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> rv := context.<span class="type">Get</span>(r, cua.key); rv != <span class="literal">nil</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> rv.(*models.<span class="type">User</span>)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="models/">models/</h4><p>&emsp;&emsp; model 是为了描述数据库中的数据的数据结构。在这个例子中使用model来访问数据库，创建一个空的model，然后通过查询数据库为其赋值。下面是一个例子：</p>
-<figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">package models</span><br><span class="line"></span><br><span class="line">import (</span><br><span class="line">  <span class="string">"gopkg.in/mgo.v2"</span></span><br><span class="line">  <span class="string">"gopkg.in/mgo.v2/bson"</span></span><br><span class="line">  <span class="string">"strings"</span></span><br><span class="line">  <span class="string">"time"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">type Service struct &#123;</span><br><span class="line">  // identification information</span><br><span class="line">  ID          bson.ObjectId `bson:<span class="string">"_id"</span>`</span><br><span class="line">  Name        <span class="built_in">string</span>        `bson:<span class="string">"name"</span>`</span><br><span class="line">  Description <span class="built_in">string</span>        `bson:<span class="string">"description"</span>`</span><br><span class="line">  URL         <span class="built_in">string</span>        `bson:<span class="string">"url"</span>`</span><br><span class="line">  Search      <span class="built_in">string</span>        `bson:<span class="string">"search"</span>`</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewService</span><span class="params">(name, description, url string, creatorID bson.ObjectId)</span> *<span class="title">Service</span> &#123;</span></span><br><span class="line">  url = strings.TrimPrefix(strings.TrimPrefix(url, <span class="string">"http://"</span>), <span class="string">"https://"</span>)</span><br><span class="line">  <span class="keyword">return</span> &amp;Service&#123;</span><br><span class="line">    ID:            bson.NewObjectId(),</span><br><span class="line">    Name:          name,</span><br><span class="line">    URL:           url,</span><br><span class="line">    Description:   description,</span><br><span class="line">    Search:        strings.ToLower(name) + <span class="string">";"</span> + strings.ToLower(description) + <span class="string">";"</span> + strings.ToLower(url),</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Service)</span> <span class="title">Save</span><span class="params">(db *mgo.Database)</span> <span class="title">error</span> &#123;</span></span><br><span class="line">  _, err := s.coll(db).UpsertId(s.ID, s)</span><br><span class="line">  <span class="keyword">return</span> err</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Service)</span> <span class="title">FindByID</span><span class="params">(id bson.ObjectId, db *mgo.Database)</span> <span class="title">error</span> &#123;</span></span><br><span class="line">  <span class="keyword">return</span> s.coll(db).FindId(id).One(s)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(*Service)</span> <span class="title">coll</span><span class="params">(db *mgo.Database)</span> *<span class="title">mgo</span>.<span class="title">Collection</span> &#123;</span></span><br><span class="line">  <span class="keyword">return</span> db.C(<span class="string">"service"</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">type Services []Service</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Services)</span> <span class="title">FindByIDs</span><span class="params">(ids []bson.ObjectId, db *mgo.Database)</span> <span class="title">error</span> &#123;</span></span><br><span class="line">  <span class="keyword">return</span> s.coll(db).Find(bson.M&#123;<span class="string">"_id"</span>: bson.M&#123;<span class="string">"$in"</span>: ids&#125;&#125;).Sort(<span class="string">"name"</span>).All(s)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(*Services)</span> <span class="title">coll</span><span class="params">(db *mgo.Database)</span> *<span class="title">mgo</span>.<span class="title">Collection</span> &#123;</span></span><br><span class="line">  <span class="keyword">return</span> db.C(<span class="string">"service"</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="views/">views/</h4><p>&emsp;&emsp; 将Golang的模板文件放到<code>views</code>目录下。这样，不管用什么样的模板引擎都可以直接放到<code>views</code>下。</p>
-<h4 id="public/">public/</h4><p>&emsp;&emsp; 跟以前一样，这个文件都是放公开的文件的，例如<code>css</code>,<code>img</code>,<code>scripts</code>。</p>
-<h4 id="如何运行">如何运行</h4><p>&emsp;&emsp; 毫无疑问，我最喜欢的就是<a href="https://www.docker.com/" target="_blank" rel="external">docker</a>，因此我将使用他来运行这个应用。如果不使用docker，那么可以将文件放到<code>$GOPATH/src/github.com/larryprice/refermadness</code>,运行<code>go get</code>来获取所有的依赖，然后运行 <code>go run main.go</code>或者<code>go build; ./refermadness</code>运行程序。如果你也喜欢使用docker，那么可以直接通过<code>Dockerfile</code>来运行。</p>
-<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">FROM</span> golang:<span class="number">1.4</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">RUN</span> <span class="bash">go get github.com/codegangsta/gin</span><br><span class="line"></span></span><br><span class="line"><span class="built_in">ADD</span> <span class="bash">. /go/src/github.com/larryprice/refermadness</span><br><span class="line"></span><span class="built_in">WORKDIR</span> <span class="bash">/go/src/github.com/larryprice/refermadness</span><br><span class="line"></span><span class="built_in">RUN</span> <span class="bash">go get</span></span><br></pre></td></tr></table></figure>
+<h4 id="controllers"><a href="#controllers" class="headerlink" title="controllers/"></a>controllers/</h4><p>&emsp;&emsp; 这里的controller与Rails里的controller的概念很像。Controller注册自己的router，设置自己的函数调用。一个简短的例子如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div></pre></td><td class="code"><pre><div class="line">package controllers</div><div class="line"></div><div class="line">import (</div><div class="line">  &quot;encoding/json&quot;</div><div class="line">  &quot;errors&quot;</div><div class="line">  &quot;github.com/gorilla/mux&quot;</div><div class="line">  &quot;github.com/larryprice/refermadness/models&quot;</div><div class="line">  &quot;github.com/larryprice/refermadness/utils&quot;</div><div class="line">  &quot;gopkg.in/mgo.v2/bson&quot;</div><div class="line">  &quot;gopkg.in/unrolled/render.v1&quot;</div><div class="line">  &quot;html/template&quot;</div><div class="line">  &quot;net/http&quot;</div><div class="line">  &quot;strings&quot;</div><div class="line">)</div><div class="line"></div><div class="line">type ServiceControllerImpl struct &#123;</div><div class="line">  currentUser utils.CurrentUserAccessor</div><div class="line">  basePage    utils.BasePageCreator</div><div class="line">  renderer    *render.Render</div><div class="line">  database    utils.DatabaseAccessor</div><div class="line">&#125;</div><div class="line"></div><div class="line">func NewServiceController(currentUser utils.CurrentUserAccessor, basePage utils.BasePageCreator,</div><div class="line">  renderer *render.Render, database utils.DatabaseAccessor) *ServiceControllerImpl &#123;</div><div class="line">  return &amp;ServiceControllerImpl&#123;</div><div class="line">    currentUser: currentUser,</div><div class="line">    basePage:    basePage,</div><div class="line">    renderer:    renderer,</div><div class="line">    database:    database,</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">func (sc *ServiceControllerImpl) Register(router *mux.Router) &#123;</div><div class="line">  router.HandleFunc(&quot;/service/&#123;id&#125;&quot;, sc.single)</div><div class="line">  // ...</div><div class="line">&#125;</div><div class="line"></div><div class="line">// ...</div><div class="line"></div><div class="line">type serviceResult struct &#123;</div><div class="line">  *models.Service</div><div class="line">  RandomCode *models.ReferralCode</div><div class="line">  UserCode   *models.ReferralCode</div><div class="line">&#125;</div><div class="line"></div><div class="line">type servicePage struct &#123;</div><div class="line">  utils.BasePage</div><div class="line">  ResultString string</div><div class="line">&#125;</div><div class="line"></div><div class="line">func (sc *ServiceControllerImpl) single(w http.ResponseWriter, r *http.Request) &#123;</div><div class="line">  data, err := sc.get(w, r)</div><div class="line"></div><div class="line">  if len(r.Header[&quot;Content-Type&quot;]) == 1 &amp;&amp; strings.Contains(r.Header[&quot;Content-Type&quot;][0], &quot;application/json&quot;) &#123;</div><div class="line">    if err != nil &#123;</div><div class="line">      sc.renderer.JSON(w, http.StatusBadRequest, map[string]string&#123;</div><div class="line">        &quot;error&quot;: err.Error(),</div><div class="line">      &#125;)</div><div class="line">      return</div><div class="line">    &#125;</div><div class="line">    sc.renderer.JSON(w, http.StatusOK, data)</div><div class="line">    return</div><div class="line">  &#125; else if err != nil &#123;</div><div class="line">    http.Error(w, err.Error(), http.StatusBadRequest)</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  resultString, _ := json.Marshal(data)</div><div class="line">  t, _ := template.ParseFiles(&quot;views/layout.html&quot;, &quot;views/service.html&quot;)</div><div class="line">  t.Execute(w, servicePage&#123;sc.basePage.Get(r), string(resultString)&#125;)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="utils"><a href="#utils" class="headerlink" title="utils/"></a>utils/</h4><p>&emsp;&emsp; 在<code>utils</code>目录下的文件提供了一些底层功能用来支持其他的代码。在这个例子中，主要是定义一个结构体来访问请求的上下文，处理session，定义一个特别的页面来继承。下面是通过访问上下文设置用户的例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line">package utils</div><div class="line"></div><div class="line">import (</div><div class="line">  &quot;github.com/gorilla/context&quot;</div><div class="line">  &quot;github.com/larryprice/refermadness/models&quot;</div><div class="line">  &quot;net/http&quot;</div><div class="line">)</div><div class="line"></div><div class="line">type CurrentUserAccessor struct &#123;</div><div class="line">  key int</div><div class="line">&#125;</div><div class="line"></div><div class="line">func NewCurrentUserAccessor(key int) *CurrentUserAccessor &#123;</div><div class="line">  return &amp;CurrentUserAccessor&#123;key&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">func (cua *CurrentUserAccessor) Set(r *http.Request, user *models.User) &#123;</div><div class="line">  context.Set(r, cua.key, user)</div><div class="line">&#125;</div><div class="line"></div><div class="line">func (cua *CurrentUserAccessor) Clear(r *http.Request) &#123;</div><div class="line">  context.Delete(r, cua.key)</div><div class="line">&#125;</div><div class="line"></div><div class="line">func (cua *CurrentUserAccessor) Get(r *http.Request) *models.User &#123;</div><div class="line">  if rv := context.Get(r, cua.key); rv != nil &#123;</div><div class="line">    return rv.(*models.User)</div><div class="line">  &#125;</div><div class="line">  return nil</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="models"><a href="#models" class="headerlink" title="models/"></a>models/</h4><p>&emsp;&emsp; model 是为了描述数据库中的数据的数据结构。在这个例子中使用model来访问数据库，创建一个空的model，然后通过查询数据库为其赋值。下面是一个例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div></pre></td><td class="code"><pre><div class="line">package models</div><div class="line"></div><div class="line">import (</div><div class="line">  &quot;gopkg.in/mgo.v2&quot;</div><div class="line">  &quot;gopkg.in/mgo.v2/bson&quot;</div><div class="line">  &quot;strings&quot;</div><div class="line">  &quot;time&quot;</div><div class="line">)</div><div class="line"></div><div class="line">type Service struct &#123;</div><div class="line">  // identification information</div><div class="line">  ID          bson.ObjectId `bson:&quot;_id&quot;`</div><div class="line">  Name        string        `bson:&quot;name&quot;`</div><div class="line">  Description string        `bson:&quot;description&quot;`</div><div class="line">  URL         string        `bson:&quot;url&quot;`</div><div class="line">  Search      string        `bson:&quot;search&quot;`</div><div class="line">&#125;</div><div class="line"></div><div class="line">func NewService(name, description, url string, creatorID bson.ObjectId) *Service &#123;</div><div class="line">  url = strings.TrimPrefix(strings.TrimPrefix(url, &quot;http://&quot;), &quot;https://&quot;)</div><div class="line">  return &amp;Service&#123;</div><div class="line">    ID:            bson.NewObjectId(),</div><div class="line">    Name:          name,</div><div class="line">    URL:           url,</div><div class="line">    Description:   description,</div><div class="line">    Search:        strings.ToLower(name) + &quot;;&quot; + strings.ToLower(description) + &quot;;&quot; + strings.ToLower(url),</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">func (s *Service) Save(db *mgo.Database) error &#123;</div><div class="line">  _, err := s.coll(db).UpsertId(s.ID, s)</div><div class="line">  return err</div><div class="line">&#125;</div><div class="line"></div><div class="line">func (s *Service) FindByID(id bson.ObjectId, db *mgo.Database) error &#123;</div><div class="line">  return s.coll(db).FindId(id).One(s)</div><div class="line">&#125;</div><div class="line"></div><div class="line">func (*Service) coll(db *mgo.Database) *mgo.Collection &#123;</div><div class="line">  return db.C(&quot;service&quot;)</div><div class="line">&#125;</div><div class="line"></div><div class="line">type Services []Service</div><div class="line"></div><div class="line">func (s *Services) FindByIDs(ids []bson.ObjectId, db *mgo.Database) error &#123;</div><div class="line">  return s.coll(db).Find(bson.M&#123;&quot;_id&quot;: bson.M&#123;&quot;$in&quot;: ids&#125;&#125;).Sort(&quot;name&quot;).All(s)</div><div class="line">&#125;</div><div class="line"></div><div class="line">func (*Services) coll(db *mgo.Database) *mgo.Collection &#123;</div><div class="line">  return db.C(&quot;service&quot;)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="views"><a href="#views" class="headerlink" title="views/"></a>views/</h4><p>&emsp;&emsp; 将Golang的模板文件放到<code>views</code>目录下。这样，不管用什么样的模板引擎都可以直接放到<code>views</code>下。</p>
+<h4 id="public"><a href="#public" class="headerlink" title="public/"></a>public/</h4><p>&emsp;&emsp; 跟以前一样，这个文件都是放公开的文件的，例如<code>css</code>,<code>img</code>,<code>scripts</code>。</p>
+<h4 id="如何运行"><a href="#如何运行" class="headerlink" title="如何运行"></a>如何运行</h4><p>&emsp;&emsp; 毫无疑问，我最喜欢的就是<a href="https://www.docker.com/" target="_blank" rel="external">docker</a>，因此我将使用他来运行这个应用。如果不使用docker，那么可以将文件放到<code>$GOPATH/src/github.com/larryprice/refermadness</code>,运行<code>go get</code>来获取所有的依赖，然后运行 <code>go run main.go</code>或者<code>go build; ./refermadness</code>运行程序。如果你也喜欢使用docker，那么可以直接通过<code>Dockerfile</code>来运行。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">FROM golang:1.4</div><div class="line"></div><div class="line">RUN go get github.com/codegangsta/gin</div><div class="line"></div><div class="line">ADD . /go/src/github.com/larryprice/refermadness</div><div class="line">WORKDIR /go/src/github.com/larryprice/refermadness</div><div class="line">RUN go get</div></pre></td></tr></table></figure>
 <p>&emsp;&emsp; 同时我也很喜欢<a href="https://github.com/docker/compose" target="_blank" rel="external">compose</a>，所以我也通过compose 文件来运行所有的应用。我用了JSC ，SASS和mongodb，所以一下是我的<code>docker-compose.yml</code>文件。</p>
-<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">main:</span></span><br><span class="line"><span class="label">  build:</span> .</span><br><span class="line"><span class="label">  command:</span> gin run</span><br><span class="line"><span class="label">  env_file:</span> .env</span><br><span class="line"><span class="label">  volumes:</span></span><br><span class="line">    - .<span class="regexp">/:/</span>go<span class="regexp">/src/</span>github.com<span class="regexp">/larryprice/</span>refermadness</span><br><span class="line"><span class="label">  working_dir:</span> <span class="regexp">/go/</span>src<span class="regexp">/github.com/</span>larryprice/refermadness</span><br><span class="line"><span class="label">  ports:</span></span><br><span class="line">    - <span class="string">"3000:3000"</span></span><br><span class="line"><span class="label">  links:</span></span><br><span class="line">    - db</span><br><span class="line"><span class="string">sass:</span></span><br><span class="line"><span class="label">  image:</span> larryprice/sass</span><br><span class="line"><span class="label">  volumes:</span></span><br><span class="line">    - .<span class="regexp">/public/</span><span class="string">css:</span>/src</span><br><span class="line"><span class="string">jsx:</span></span><br><span class="line"><span class="label">  image:</span> larryprice/jsx</span><br><span class="line"><span class="label">  volumes:</span></span><br><span class="line">    - .<span class="regexp">/public/</span><span class="string">scripts:</span>/src</span><br><span class="line"><span class="string">db:</span></span><br><span class="line"><span class="label">  image:</span> <span class="string">mongo:</span><span class="number">3.0</span></span><br><span class="line"><span class="label">  command:</span> mongod --smallfiles --quiet --logpath=<span class="regexp">/dev/</span><span class="literal">null</span></span><br><span class="line"><span class="label">  volumes_from:</span></span><br><span class="line">    - dbvolume</span><br><span class="line"><span class="string">dbvolume:</span></span><br><span class="line"><span class="label">  image:</span> <span class="string">busybox:</span>ubuntu-<span class="number">14.04</span></span><br><span class="line"><span class="label">  volumes:</span></span><br><span class="line">    - <span class="regexp">/data/</span>db</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line">main:</div><div class="line">  build: .</div><div class="line">  command: gin run</div><div class="line">  env_file: .env</div><div class="line">  volumes:</div><div class="line">    - ./:/go/src/github.com/larryprice/refermadness</div><div class="line">  working_dir: /go/src/github.com/larryprice/refermadness</div><div class="line">  ports:</div><div class="line">    - &quot;3000:3000&quot;</div><div class="line">  links:</div><div class="line">    - db</div><div class="line">sass:</div><div class="line">  image: larryprice/sass</div><div class="line">  volumes:</div><div class="line">    - ./public/css:/src</div><div class="line">jsx:</div><div class="line">  image: larryprice/jsx</div><div class="line">  volumes:</div><div class="line">    - ./public/scripts:/src</div><div class="line">db:</div><div class="line">  image: mongo:3.0</div><div class="line">  command: mongod --smallfiles --quiet --logpath=/dev/null</div><div class="line">  volumes_from:</div><div class="line">    - dbvolume</div><div class="line">dbvolume:</div><div class="line">  image: busybox:ubuntu-14.04</div><div class="line">  volumes:</div><div class="line">    - /data/db</div></pre></td></tr></table></figure>
 <p>&emsp;&emsp; 然后运行<code>docker-compose up</code>来运行所有的容器并启动服务器。</p>
 
       
     </div>
-    <footer>
+    <footer class="article-footer">
+      <a data-url="https://mashuai.github.io/2015/11/10/Go-Web-架构/" data-id="cj0gglqqu00001gitw9zxk4mg" class="article-share-link">Share</a>
       
-        
-        
-  
-  <div class="tags">
-    <a href="/tags/Architecture/">Architecture</a>, <a href="/tags/Go/">Go</a>, <a href="/tags/Translate/">Translate</a>
-  </div>
-
-        
-  <div class="addthis addthis_toolbox addthis_default_style">
-    
-      <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
-    
-    
-      <a class="addthis_button_tweet"></a>
-    
-    
-      <a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
-    
-    
-      <a class="addthis_button_pinterest_pinit" pi:pinit:layout="horizontal"></a>
-    
-    <a class="addthis_counter addthis_pill_style"></a>
-  </div>
-  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js"></script>
-
+        <a href="https://mashuai.github.io/2015/11/10/Go-Web-架构/#disqus_thread" class="article-comment-link">Comments</a>
       
-      <div class="clearfix"></div>
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Architecture/">Architecture</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Go/">Go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Translate/">Translate</a></li></ul>
+
     </footer>
   </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2015/11/12/HTTP-2-和GO/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          HTTP/2 和GO
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2015/11/09/Ansible-入门指南/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Ansible 入门指南</div>
+    </a>
+  
+</nav>
+
+  
 </article>
 
 
-<section id="comment">
-  <h1 class="title">留言</h1>
-
-  
+<section id="comments">
   <div id="disqus_thread">
     <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
   </div>
-  
 </section>
-
-</div></div>
-    <aside id="sidebar" class="alignright">
-  <div class="search">
-  <form action="//google.com/search" method="get" accept-charset="utf-8">
-    <input type="search" name="q" results="0" placeholder="搜索">
-    <input type="hidden" name="q" value="site:mashuai.github.io">
-  </form>
-</div>
-
+</section>
+        
+          <aside id="sidebar">
   
-
+    
   
-<div class="widget tag">
-  <h3 class="title">标签</h3>
-  <ul class="entry">
-  
-    <li><a href="/tags/Ansible/">Ansible</a><small>2</small></li>
-  
-    <li><a href="/tags/Architecture/">Architecture</a><small>1</small></li>
-  
-    <li><a href="/tags/Go/">Go</a><small>4</small></li>
-  
-    <li><a href="/tags/HTTP/">HTTP</a><small>1</small></li>
-  
-    <li><a href="/tags/HTTP-2/">HTTP/2</a><small>1</small></li>
-  
-    <li><a href="/tags/Middleware/">Middleware</a><small>1</small></li>
-  
-    <li><a href="/tags/Translate/">Translate</a><small>6</small></li>
-  
-    <li><a href="/tags/Vagrant/">Vagrant</a><small>2</small></li>
-  
-  </ul>
-</div>
-
-</aside>
-    <div class="clearfix"></div>
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ansible/">Ansible</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Architecture/">Architecture</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Go/">Go</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP-2/">HTTP/2</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Middleware/">Middleware</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OKHttp/">OKHttp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OkHttp/">OkHttp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Translate/">Translate</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vagrant/">Vagrant</a><span class="tag-list-count">2</span></li></ul>
+    </div>
   </div>
-  <footer id="footer" class="inner"><div class="alignleft">
+
   
-  &copy; 2015 mashuai
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Ansible/" style="font-size: 12.5px;">Ansible</a> <a href="/tags/Architecture/" style="font-size: 10px;">Architecture</a> <a href="/tags/Go/" style="font-size: 17.5px;">Go</a> <a href="/tags/HTTP/" style="font-size: 17.5px;">HTTP</a> <a href="/tags/HTTP-2/" style="font-size: 10px;">HTTP/2</a> <a href="/tags/Java/" style="font-size: 15px;">Java</a> <a href="/tags/Middleware/" style="font-size: 10px;">Middleware</a> <a href="/tags/OKHttp/" style="font-size: 12.5px;">OKHttp</a> <a href="/tags/OkHttp/" style="font-size: 12.5px;">OkHttp</a> <a href="/tags/Translate/" style="font-size: 20px;">Translate</a> <a href="/tags/Vagrant/" style="font-size: 12.5px;">Vagrant</a>
+    </div>
+  </div>
+
   
-</div>
-<div class="clearfix"></div></footer>
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
-<script src="/js/jquery.imagesloaded.min.js"></script>
-<script src="/js/gallery.js"></script>
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">March 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a><span class="archive-list-count">8</span></li></ul>
+    </div>
+  </div>
 
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/03/19/okhttp/interceptors/">OKHttp 拦截器</a>
+          </li>
+        
+          <li>
+            <a href="/2017/03/18/okhttp/Recipes/">OKHttp Recipes</a>
+          </li>
+        
+          <li>
+            <a href="/2017/03/18/okhttp/connections/">OKHttp connections</a>
+          </li>
+        
+          <li>
+            <a href="/2017/03/18/okhttp/calls/">OKHttp的调用</a>
+          </li>
+        
+          <li>
+            <a href="/2015/11/14/为Go-Web-App-创建一个主页面/">为Go Web App 创建一个主页面</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
 
-<script type="text/javascript">
-var disqus_shortname = 'jabfor';
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 mashuai<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+<script src="https://s4.cnzz.com/z_stat.php?id=1261529414&web_id=1261529414" language="JavaScript"></script>
+</footer>
 
-(function(){
-  var dsq = document.createElement('script');
-  dsq.type = 'text/javascript';
-  dsq.async = true;
-  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-}());
-</script>
-
-
-
-<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
-<script src="/fancybox/jquery.fancybox.pack.js"></script>
-<script type="text/javascript">
-(function($){
-  $('.fancybox').fancybox();
-})(jQuery);
-</script>
-
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
 <script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-  ga('create', 'UA-48348924-2', 'auto');
-  ga('send', 'pageview');
-
+  var disqus_shortname = 'jabfor';
+  
+  var disqus_url = 'https://mashuai.github.io/2015/11/10/Go-Web-架构/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
 </script>
 
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
 </body>
 </html>

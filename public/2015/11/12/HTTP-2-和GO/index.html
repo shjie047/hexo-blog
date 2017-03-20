@@ -1,199 +1,247 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
   
   <title>HTTP/2 和GO | Mashuai&#39;s Notes</title>
-  <meta name="author" content="mashuai">
-  
-  <meta name="description" content="原文地址&amp;emsp;&amp;emsp; HTTP/2是一个添加了一些新功能的HTTP的新版本，这些功能包括连接复用，首部压缩。再Go的标准库中暂时还没有HTTP/2的实现，但是现在有很多正在开发的库可以用来在Go中实现HTTP/2的server和client。&amp;emsp;&amp;emsp; Brad Fitzp">
-  
-  
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-
-  <meta property="og:title" content="HTTP/2 和GO"/>
-  <meta property="og:site_name" content="Mashuai&#39;s Notes"/>
-
+  <meta name="description" content="原文地址&amp;emsp;&amp;emsp; HTTP/2是一个添加了一些新功能的HTTP的新版本，这些功能包括连接复用，首部压缩。再Go的标准库中暂时还没有HTTP/2的实现，但是现在有很多正在开发的库可以用来在Go中实现HTTP/2的server和client。&amp;emsp;&amp;emsp; Brad Fitzpatrick实现了一个golang.org/x/net/http2的库，这个库甚至最终会加入到标准库">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HTTP/2 和GO">
+<meta property="og:url" content="https://mashuai.github.io/2015/11/12/HTTP-2-和GO/index.html">
+<meta property="og:site_name" content="Mashuai's Notes">
+<meta property="og:description" content="原文地址&amp;emsp;&amp;emsp; HTTP/2是一个添加了一些新功能的HTTP的新版本，这些功能包括连接复用，首部压缩。再Go的标准库中暂时还没有HTTP/2的实现，但是现在有很多正在开发的库可以用来在Go中实现HTTP/2的server和client。&amp;emsp;&amp;emsp; Brad Fitzpatrick实现了一个golang.org/x/net/http2的库，这个库甚至最终会加入到标准库">
+<meta property="og:updated_time" content="2016-07-22T15:04:44.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="HTTP/2 和GO">
+<meta name="twitter:description" content="原文地址&amp;emsp;&amp;emsp; HTTP/2是一个添加了一些新功能的HTTP的新版本，这些功能包括连接复用，首部压缩。再Go的标准库中暂时还没有HTTP/2的实现，但是现在有很多正在开发的库可以用来在Go中实现HTTP/2的server和client。&amp;emsp;&amp;emsp; Brad Fitzpatrick实现了一个golang.org/x/net/http2的库，这个库甚至最终会加入到标准库">
   
-    <meta property="og:image" content="undefined"/>
+    <link rel="alternative" href="/atom.xml" title="Mashuai&#39;s Notes" type="application/atom+xml">
   
-
-  <link href="/favicon.png" rel="icon">
-  <link rel="alternate" href="/atom.xml" title="Mashuai&#39;s Notes" type="application/atom+xml">
-  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
-  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css">
   
 
 </head>
-
-
 <body>
-  <header id="header" class="inner"><div class="alignleft">
-  <h1><a href="/">Mashuai&#39;s Notes</a></h1>
-  <h2><a href="/"></a></h2>
-</div>
-<nav id="main-nav" class="alignright">
-  <ul>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Mashuai&#39;s Notes</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://mashuai.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-HTTP-2-和GO" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/11/12/HTTP-2-和GO/" class="article-date">
+  <time datetime="2015-11-12T03:39:21.000Z" itemprop="datePublished">2015-11-12</time>
+</a>
     
-      <li><a href="/">Home</a></li>
+  </div>
+  <div class="article-inner">
     
-      <li><a href="/archives">Archives</a></li>
     
-  </ul>
-  <div class="clearfix"></div>
-</nav>
-<div class="clearfix"></div></header>
-  <div id="content" class="inner">
-    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+      <header class="article-header">
+        
   
-  <div class="post-content">
-    <header>
-      
-        <div class="icon"></div>
-        <time datetime="2015-11-12T03:39:21.000Z"><a href="/2015/11/12/HTTP-2-和GO/">2015-11-12</a></time>
-      
-      
-  
-    <h1 class="title">HTTP/2 和GO</h1>
+    <h1 class="article-title" itemprop="name">
+      HTTP/2 和GO
+    </h1>
   
 
-    </header>
-    <div class="entry">
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
       
         <p><a href="https://www.ianlewis.org/en/http2-and-go" target="_blank" rel="external">原文地址</a><br>&emsp;&emsp; HTTP/2是一个添加了一些新功能的HTTP的新版本，这些功能包括连接复用，首部压缩。再Go的标准库中暂时还没有HTTP/2的实现，但是现在有很多正在开发的库可以用来在Go中实现HTTP/2的server和client。<br>&emsp;&emsp; Brad Fitzpatrick实现了一个<a href="https://godoc.org/golang.org/x/net/http2" target="_blank" rel="external">golang.org/x/net/http2</a>的库，这个库甚至最终会加入到标准库中，不过他现在正在开发，所以在其他的库中。因为他现在的开发很活跃，所有情况因人而异，但是如果你想实现HTTP/2的服务器，仍然可以使用这个库。</p>
-<h3 id="创建HTTP/2服务器">创建HTTP/2服务器</h3><p>&emsp;&emsp; 使用http2的库写一个服务器是很简单的。http2库和标准库的http包集成在一起，需要调用<code>http2.ConfigureServer()</code>来配置一个普通http使用HTTP/2协议。如果需要通过浏览器访问或者降级到HTTP 1.x 协议，那么你需要设置TLS 加密。虽然加密不是必须的，但是现在还没有浏览器支持非加密的HTTP/2协议。</p>
-<figure class="highlight aspectj"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">"log"</span></span><br><span class="line">    <span class="string">"net/http"</span></span><br><span class="line">    <span class="string">"os"</span></span><br><span class="line"></span><br><span class="line">    <span class="string">"golang.org/x/net/http2"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function">func <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    cwd, err := os.Getwd()</span><br><span class="line">    <span class="keyword">if</span> err != nil &#123;</span><br><span class="line">        log.Fatal(err)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    srv := &amp;http.Server&#123;</span><br><span class="line">        Addr:    <span class="string">":8000"</span>, // Normally <span class="string">":443"</span></span><br><span class="line">        Handler: http.FileServer(http.Dir(cwd)),</span><br><span class="line">    &#125;</span><br><span class="line">    http2.ConfigureServer(srv, &amp;http2.Server&#123;&#125;)</span><br><span class="line">    log.Fatal(srv.ListenAndServeTLS(<span class="string">"server.crt"</span>, <span class="string">"server.key"</span>))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="创建HTTP/2_客户端">创建HTTP/2 客户端</h3><p>&emsp;&emsp; 现在使用http2的库创建客户端很hacky。虽然它会输出很多调试日志，但是对于大多数情况下运行的很好。可以使用<code>http2.Transport</code>对象，将他传给<code>http</code>包的client。</p>
-<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">package main</span><br><span class="line"></span><br><span class="line">import (</span><br><span class="line">    <span class="string">"fmt"</span></span><br><span class="line">    <span class="string">"io/ioutil"</span></span><br><span class="line">    <span class="string">"log"</span></span><br><span class="line">    <span class="string">"net/http"</span></span><br><span class="line"></span><br><span class="line">    <span class="string">"golang.org/x/net/http2"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">func main() &#123;</span><br><span class="line">    client := http.Client&#123;</span><br><span class="line">        <span class="comment">// InsecureTLSDial is temporary and will likely be</span></span><br><span class="line">        <span class="comment">// replaced by a different API later.</span></span><br><span class="line">        Transport: &amp;http2.Transport&#123;InsecureTLSDial: true&#125;,</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    resp, <span class="keyword">err</span> := client.<span class="literal">Get</span>(<span class="string">"https://localhost:8000/"</span>)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">err</span> != nil &#123;</span><br><span class="line">        <span class="keyword">log</span>.Fatal(<span class="keyword">err</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    body, <span class="keyword">err</span> := ioutil.ReadAll(resp.Body)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">err</span> != nil &#123;</span><br><span class="line">        <span class="keyword">log</span>.Fatal(<span class="keyword">err</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    fmt.Println(<span class="literal">string</span>(body))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="更多阅读">更多阅读</h3><p>&emsp;&emsp; 如果你对HTTP/2协议感兴趣，那么可以参考<a href="https://http2.github.io/" target="_blank" rel="external">HTTP/2 主页</a>，这个页面有很多其他资料的连接还有其他语言的实现。<br>&emsp;&emsp; 如果你想知道HTTP/2的服务端和客户端是如何实现的，那么<a href="https://github.com/Jxck/http2" target="_blank" rel="external">Jxck’s http2 implementation</a>的实现就很值得一读。Jxck通过对标准的HTTP库的TLSNextProto设置一个钩子来实现的。你可以再这里阅读一些<a href="https://github.com/Jxck/http2/blob/master/sample/http.go" target="_blank" rel="external">示例</a>。<br>&emsp;&emsp; grpc-go 库同样也有自己的服务端和客户端的实现。</p>
+<h3 id="创建HTTP-2服务器"><a href="#创建HTTP-2服务器" class="headerlink" title="创建HTTP/2服务器"></a>创建HTTP/2服务器</h3><p>&emsp;&emsp; 使用http2的库写一个服务器是很简单的。http2库和标准库的http包集成在一起，需要调用<code>http2.ConfigureServer()</code>来配置一个普通http使用HTTP/2协议。如果需要通过浏览器访问或者降级到HTTP 1.x 协议，那么你需要设置TLS 加密。虽然加密不是必须的，但是现在还没有浏览器支持非加密的HTTP/2协议。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line">package main</div><div class="line"></div><div class="line">import (</div><div class="line">    &quot;log&quot;</div><div class="line">    &quot;net/http&quot;</div><div class="line">    &quot;os&quot;</div><div class="line"></div><div class="line">    &quot;golang.org/x/net/http2&quot;</div><div class="line">)</div><div class="line"></div><div class="line">func main() &#123;</div><div class="line">    cwd, err := os.Getwd()</div><div class="line">    if err != nil &#123;</div><div class="line">        log.Fatal(err)</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    srv := &amp;http.Server&#123;</div><div class="line">        Addr:    &quot;:8000&quot;, // Normally &quot;:443&quot;</div><div class="line">        Handler: http.FileServer(http.Dir(cwd)),</div><div class="line">    &#125;</div><div class="line">    http2.ConfigureServer(srv, &amp;http2.Server&#123;&#125;)</div><div class="line">    log.Fatal(srv.ListenAndServeTLS(&quot;server.crt&quot;, &quot;server.key&quot;))</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="创建HTTP-2-客户端"><a href="#创建HTTP-2-客户端" class="headerlink" title="创建HTTP/2 客户端"></a>创建HTTP/2 客户端</h3><p>&emsp;&emsp; 现在使用http2的库创建客户端很hacky。虽然它会输出很多调试日志，但是对于大多数情况下运行的很好。可以使用<code>http2.Transport</code>对象，将他传给<code>http</code>包的client。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line">package main</div><div class="line"></div><div class="line">import (</div><div class="line">    &quot;fmt&quot;</div><div class="line">    &quot;io/ioutil&quot;</div><div class="line">    &quot;log&quot;</div><div class="line">    &quot;net/http&quot;</div><div class="line"></div><div class="line">    &quot;golang.org/x/net/http2&quot;</div><div class="line">)</div><div class="line"></div><div class="line">func main() &#123;</div><div class="line">    client := http.Client&#123;</div><div class="line">        // InsecureTLSDial is temporary and will likely be</div><div class="line">        // replaced by a different API later.</div><div class="line">        Transport: &amp;http2.Transport&#123;InsecureTLSDial: true&#125;,</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    resp, err := client.Get(&quot;https://localhost:8000/&quot;)</div><div class="line">    if err != nil &#123;</div><div class="line">        log.Fatal(err)</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    body, err := ioutil.ReadAll(resp.Body)</div><div class="line">    if err != nil &#123;</div><div class="line">        log.Fatal(err)</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    fmt.Println(string(body))</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="更多阅读"><a href="#更多阅读" class="headerlink" title="更多阅读"></a>更多阅读</h3><p>&emsp;&emsp; 如果你对HTTP/2协议感兴趣，那么可以参考<a href="https://http2.github.io/" target="_blank" rel="external">HTTP/2 主页</a>，这个页面有很多其他资料的连接还有其他语言的实现。<br>&emsp;&emsp; 如果你想知道HTTP/2的服务端和客户端是如何实现的，那么<a href="https://github.com/Jxck/http2" target="_blank" rel="external">Jxck’s http2 implementation</a>的实现就很值得一读。Jxck通过对标准的HTTP库的TLSNextProto设置一个钩子来实现的。你可以再这里阅读一些<a href="https://github.com/Jxck/http2/blob/master/sample/http.go" target="_blank" rel="external">示例</a>。<br>&emsp;&emsp; grpc-go 库同样也有自己的服务端和客户端的实现。</p>
 
       
     </div>
-    <footer>
+    <footer class="article-footer">
+      <a data-url="https://mashuai.github.io/2015/11/12/HTTP-2-和GO/" data-id="cj0gglqrd00031gitts7ijp6n" class="article-share-link">Share</a>
       
-        
-        
-  
-  <div class="tags">
-    <a href="/tags/Go/">Go</a>, <a href="/tags/HTTP-2/">HTTP/2</a>, <a href="/tags/Translate/">Translate</a>
-  </div>
-
-        
-  <div class="addthis addthis_toolbox addthis_default_style">
-    
-      <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
-    
-    
-      <a class="addthis_button_tweet"></a>
-    
-    
-      <a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
-    
-    
-      <a class="addthis_button_pinterest_pinit" pi:pinit:layout="horizontal"></a>
-    
-    <a class="addthis_counter addthis_pill_style"></a>
-  </div>
-  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js"></script>
-
+        <a href="https://mashuai.github.io/2015/11/12/HTTP-2-和GO/#disqus_thread" class="article-comment-link">Comments</a>
       
-      <div class="clearfix"></div>
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Go/">Go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP-2/">HTTP/2</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Translate/">Translate</a></li></ul>
+
     </footer>
   </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2015/11/12/使用Go开发HTTP中间件/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          使用Go开发HTTP中间件
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2015/11/10/Go-Web-架构/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Go Web 架构</div>
+    </a>
+  
+</nav>
+
+  
 </article>
 
 
-<section id="comment">
-  <h1 class="title">留言</h1>
-
-  
+<section id="comments">
   <div id="disqus_thread">
     <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
   </div>
-  
 </section>
-
-</div></div>
-    <aside id="sidebar" class="alignright">
-  <div class="search">
-  <form action="//google.com/search" method="get" accept-charset="utf-8">
-    <input type="search" name="q" results="0" placeholder="搜索">
-    <input type="hidden" name="q" value="site:mashuai.github.io">
-  </form>
-</div>
-
+</section>
+        
+          <aside id="sidebar">
   
-
+    
   
-<div class="widget tag">
-  <h3 class="title">标签</h3>
-  <ul class="entry">
-  
-    <li><a href="/tags/Ansible/">Ansible</a><small>2</small></li>
-  
-    <li><a href="/tags/Architecture/">Architecture</a><small>1</small></li>
-  
-    <li><a href="/tags/Go/">Go</a><small>4</small></li>
-  
-    <li><a href="/tags/HTTP/">HTTP</a><small>1</small></li>
-  
-    <li><a href="/tags/HTTP-2/">HTTP/2</a><small>1</small></li>
-  
-    <li><a href="/tags/Middleware/">Middleware</a><small>1</small></li>
-  
-    <li><a href="/tags/Translate/">Translate</a><small>6</small></li>
-  
-    <li><a href="/tags/Vagrant/">Vagrant</a><small>2</small></li>
-  
-  </ul>
-</div>
-
-</aside>
-    <div class="clearfix"></div>
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ansible/">Ansible</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Architecture/">Architecture</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Go/">Go</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP-2/">HTTP/2</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Middleware/">Middleware</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OKHttp/">OKHttp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OkHttp/">OkHttp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Translate/">Translate</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vagrant/">Vagrant</a><span class="tag-list-count">2</span></li></ul>
+    </div>
   </div>
-  <footer id="footer" class="inner"><div class="alignleft">
+
   
-  &copy; 2015 mashuai
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Ansible/" style="font-size: 12.5px;">Ansible</a> <a href="/tags/Architecture/" style="font-size: 10px;">Architecture</a> <a href="/tags/Go/" style="font-size: 17.5px;">Go</a> <a href="/tags/HTTP/" style="font-size: 17.5px;">HTTP</a> <a href="/tags/HTTP-2/" style="font-size: 10px;">HTTP/2</a> <a href="/tags/Java/" style="font-size: 15px;">Java</a> <a href="/tags/Middleware/" style="font-size: 10px;">Middleware</a> <a href="/tags/OKHttp/" style="font-size: 12.5px;">OKHttp</a> <a href="/tags/OkHttp/" style="font-size: 12.5px;">OkHttp</a> <a href="/tags/Translate/" style="font-size: 20px;">Translate</a> <a href="/tags/Vagrant/" style="font-size: 12.5px;">Vagrant</a>
+    </div>
+  </div>
+
   
-</div>
-<div class="clearfix"></div></footer>
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
-<script src="/js/jquery.imagesloaded.min.js"></script>
-<script src="/js/gallery.js"></script>
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">March 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a><span class="archive-list-count">8</span></li></ul>
+    </div>
+  </div>
 
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/03/19/okhttp/interceptors/">OKHttp 拦截器</a>
+          </li>
+        
+          <li>
+            <a href="/2017/03/18/okhttp/Recipes/">OKHttp Recipes</a>
+          </li>
+        
+          <li>
+            <a href="/2017/03/18/okhttp/connections/">OKHttp connections</a>
+          </li>
+        
+          <li>
+            <a href="/2017/03/18/okhttp/calls/">OKHttp的调用</a>
+          </li>
+        
+          <li>
+            <a href="/2015/11/14/为Go-Web-App-创建一个主页面/">为Go Web App 创建一个主页面</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
 
-<script type="text/javascript">
-var disqus_shortname = 'jabfor';
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 mashuai<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+<script src="https://s4.cnzz.com/z_stat.php?id=1261529414&web_id=1261529414" language="JavaScript"></script>
+</footer>
 
-(function(){
-  var dsq = document.createElement('script');
-  dsq.type = 'text/javascript';
-  dsq.async = true;
-  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-}());
-</script>
-
-
-
-<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
-<script src="/fancybox/jquery.fancybox.pack.js"></script>
-<script type="text/javascript">
-(function($){
-  $('.fancybox').fancybox();
-})(jQuery);
-</script>
-
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
 <script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-  ga('create', 'UA-48348924-2', 'auto');
-  ga('send', 'pageview');
-
+  var disqus_shortname = 'jabfor';
+  
+  var disqus_url = 'https://mashuai.github.io/2015/11/12/HTTP-2-和GO/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
 </script>
 
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
 </body>
 </html>

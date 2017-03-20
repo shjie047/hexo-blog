@@ -14,11 +14,11 @@ tags:
 &emsp;&emsp; header模板的代码如下：
 
 ``` Go
-{{ define "header" }}
+{ { define "header" }}
 <!DOCTYPE html>
 <html>
     <head>
-        <title>{{.Title}}</title>
+        <title>{ {.Title}}</title>
         <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
         <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
         <style type="text/css">
@@ -38,46 +38,46 @@ tags:
             </ul>
           </div>
         </nav>
-{{ end }}
+{ { end }}
 ```
 
 &emsp;&emsp; footer模板的代码如下：
 
 
 ``` Go
-{{ define "footer" }}
+{ { define "footer" }}
         <p class="navbar-text navbar-fixed-bottom">Go Rocks!</p>    
         <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
     </body>
 </html>
-{{ end }}
+{ { end }}
 
 ```
 
 &emsp;&emsp; main 模板的代码如下：
 
 ```
-{{define "main"}}
-{{template "header" .}}
+{ {define "main"}}
+{ { template "header" .}}
 <div class="content">
     <h2>Main</h2>
     <div>This is the Main page</div>
 </div>
-{{template "footer" .}}
-{{end}}
+{ {template "footer" .}}
+{ { end}}
 ```
 
 &emsp;&emsp; about 模板的代码如下：
 
 ```
-{{define "about"}}
-{{template "header" .}}
+{ {define "about"}}
+{ { template "header" .}}
 <div class="content">
     <h2>About</h2>
     <div>This is the About page</div>
 </div>
-{{template "footer" .}}
-{{end}}
+{ {template "footer" .}}
+{ { end}}
 ```
 
 &emsp;&emsp; 服务器代码如下：
@@ -121,7 +121,7 @@ func main() {
 }
 ```
 
-&emsp;&emsp; 每一个模板页都有一个 `{{ define "name" }}`的命令来定义模板的名字。main和about页面通过`{{ template "name" }}`来包含header和footer。`.` 出入上下文来命名模板。现在，不管main和about页面如何执行，他们的页面都会包含header和footer。
+&emsp;&emsp; 每一个模板页都有一个 `{ { define "name" }}`的命令来定义模板的名字。main和about页面通过`{ { template "name" }}`来包含header和footer。`.` 出入上下文来命名模板。现在，不管main和about页面如何执行，他们的页面都会包含header和footer。
 &emsp;&emsp; 两个页面的结果如下：
 
 ![main](https://raw.githubusercontent.com/mashuai/hexo-blog/master/goweb/main.png)  
