@@ -58,6 +58,78 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-mybatis/mybatis-started" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/03/21/mybatis/mybatis-started/" class="article-date">
+  <time datetime="2017-03-21T03:58:14.000Z" itemprop="datePublished">2017-03-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/03/21/mybatis/mybatis-started/">mybatis 入门</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><a href="http://www.mybatis.org/mybatis-3/getting-started.html" target="_blank" rel="external">原文链接</a></p>
+<h4 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h4><p>&emsp;&emsp;使用Mybatis只需要将<a href="https://github.com/mybatis/mybatis-3/releases" target="_blank" rel="external">mybatis-x.x.x.jar</a>添加到类路径即可。<br>&emsp;&emsp;如果使用maven只需要将下列代码添加到pom.xml中。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">&lt;dependency&gt;</div><div class="line">  &lt;groupId&gt;org.mybatis&lt;/groupId&gt;</div><div class="line">  &lt;artifactId&gt;mybatis&lt;/artifactId&gt;</div><div class="line">  &lt;version&gt;x.x.x&lt;/version&gt;</div><div class="line">&lt;/dependency&gt;</div></pre></td></tr></table></figure></p>
+<h4 id="根据XML配置构建SqlSessionFactory"><a href="#根据XML配置构建SqlSessionFactory" class="headerlink" title="根据XML配置构建SqlSessionFactory"></a>根据XML配置构建SqlSessionFactory</h4><p>&emsp;&emsp;每一个Mybatis应用都围绕SqlSessionFactory展开。一个SqlSessionFactory实例由SqlSessionFactoryBuilder创建。SqlSessionFacotryBuilder可以通过XML的配置文件或者一个配置好的Configuration类来创建SqlSessionFactory。<br>&emsp;&emsp;根据XML配置来构建SqlSessionFacotry非常的简单。推荐使用在类路径来配置，但是同样可以使用任何的InputStream实例，包括一个普通的文件路径或者是file:// 的URL。Mybatis有一个叫<code>Resource</code>的工具函数，可以很容易的从类路径或者其他文件路径加载资源。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">String resource = &quot;org/mybatis/example/mybatis-config.xml&quot;;</div><div class="line">InputStream inputStream = Resources.getResourceAsStream(resource);</div><div class="line">SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);</div></pre></td></tr></table></figure></p>
+<p>&emsp;&emsp;XML配置文件包含了Mybatis的核心设置，包括对应数据库连接的数据源，同样还有一个事务管理器来决定事务的范围和控制。完整的XML配置稍后会在文档中列出，下面是一个示例配置。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;</div><div class="line">&lt;!DOCTYPE configuration</div><div class="line">  PUBLIC &quot;-//mybatis.org//DTD Config 3.0//EN&quot;</div><div class="line">  &quot;http://mybatis.org/dtd/mybatis-3-config.dtd&quot;&gt;</div><div class="line">&lt;configuration&gt;</div><div class="line">  &lt;environments default=&quot;development&quot;&gt;</div><div class="line">    &lt;environment id=&quot;development&quot;&gt;</div><div class="line">      &lt;transactionManager type=&quot;JDBC&quot;/&gt;</div><div class="line">      &lt;dataSource type=&quot;POOLED&quot;&gt;</div><div class="line">        &lt;property name=&quot;driver&quot; value=&quot;$&#123;driver&#125;&quot;/&gt;</div><div class="line">        &lt;property name=&quot;url&quot; value=&quot;$&#123;url&#125;&quot;/&gt;</div><div class="line">        &lt;property name=&quot;username&quot; value=&quot;$&#123;username&#125;&quot;/&gt;</div><div class="line">        &lt;property name=&quot;password&quot; value=&quot;$&#123;password&#125;&quot;/&gt;</div><div class="line">      &lt;/dataSource&gt;</div><div class="line">    &lt;/environment&gt;</div><div class="line">  &lt;/environments&gt;</div><div class="line">  &lt;mappers&gt;</div><div class="line">    &lt;mapper resource=&quot;org/mybatis/example/BlogMapper.xml&quot;/&gt;</div><div class="line">  &lt;/mappers&gt;</div><div class="line">&lt;/configuration&gt;</div></pre></td></tr></table></figure></p>
+<p>&emsp;&emsp;XML配置文件的元素还有很多，上面这个配置只是指出了最重要的一部分。注意XML的header，是用来验证xml文件的。<code>environment</code>元素包含了一个事务管理器和一个连接池。<code>mappers</code>元素包含了很多<code>mapper</code>，mapper可以是xml配置或者只Java 的interface，他们都包含了SQL代码和mapper的定义。</p>
+<h4 id="不使用XML构建SqlSessionFactory"><a href="#不使用XML构建SqlSessionFactory" class="headerlink" title="不使用XML构建SqlSessionFactory"></a>不使用XML构建SqlSessionFactory</h4><p>&emsp;&emsp;如果你不想使用XML配置或者想自己创建配置构造器，可以直接使用Java来构建配置。MyBatis提供了一个Configuration类可以提供所有XML配置文件所能提供的配置。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">DataSource dataSource = BlogDataSourceFactory.getBlogDataSource();</div><div class="line">TransactionFactory transactionFactory = new JdbcTransactionFactory();</div><div class="line">Environment environment = new Environment(&quot;development&quot;, transactionFactory, dataSource);</div><div class="line">Configuration configuration = new Configuration(environment);</div><div class="line">configuration.addMapper(BlogMapper.class);</div><div class="line">SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(configuration);</div></pre></td></tr></table></figure></p>
+<p>&emsp;&emsp;注意在这个配置中添加了一个mapper类。mapper类包含了一个SQL映射的注解，这样可以避免使用XML配置mapper。但是由于Java注解的限制和一些MyBatis复杂的mapper配置，XML mapper仍然是一些复杂的高级映射的首选（例如，inner join)。因此MyBatis会自动寻找并加载每一个XML配置（在这个例子中BlogMapper.xml将会被从类路径中加载)。更多的稍后介绍。</p>
+<h4 id="从SqlSessionFactory获取SqlSession"><a href="#从SqlSessionFactory获取SqlSession" class="headerlink" title="从SqlSessionFactory获取SqlSession"></a>从SqlSessionFactory获取SqlSession</h4><p>&emsp;&emsp; 现在你已经有了SqlSessionFactory了，根据名字的提示，可以从它得到一个SqlSession实例。SqlSession包含了所有执行数据库操作的SQL方法。你可以直接通过SqlSession执行映射的SQL。例如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">SqlSession session = sqlSessionFactory.openSession();</div><div class="line">try &#123;</div><div class="line">  Blog blog = session.selectOne(&quot;org.mybatis.example.BlogMapper.selectBlog&quot;, 101);</div><div class="line">&#125; finally &#123;</div><div class="line">  session.close();</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>&emsp;&emsp;虽然这种方式对于之前的MyBatis的用户来说很熟悉，但是现在有一种跟清晰的方式。使用接口（例如：BlogMapper.class），该接口的方法定义了参数和返回值，这样就可以使用更加清晰的，类型安全的代码，而不再需要容易发生错误的并且去要强制类型转换的代码。例如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">SqlSession session = sqlSessionFactory.openSession();</div><div class="line">try &#123;</div><div class="line">  BlogMapper mapper = session.getMapper(BlogMapper.class);</div><div class="line">  Blog blog = mapper.selectBlog(101);</div><div class="line">&#125; finally &#123;</div><div class="line">  session.close();</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>&emsp;&emsp;现在让我们来看一下到底执行了些什么。</p>
+<h4 id="探索映射的SQL语句"><a href="#探索映射的SQL语句" class="headerlink" title="探索映射的SQL语句"></a>探索映射的SQL语句</h4><p>&emsp;&emsp;现在你可能在想SqlSession和Mapper类到底执行了什么。映射SQL语句这个主题比较大，这个主题差不多占据了此文档的一大部分。但是下面这些语句会展示这些示例到底执行了些什么。<br>&emsp;&emsp;无论是上面还是下面这些例子，这些语句都可以被定义在XML或者注解上。让我们先使用XML类配置。通过XML映射实现的MyBatis全套功能使得MyBatis流行了很多年。如果你以前用过MyBatis，这些概念你可能很熟悉，但是也有为数众多的对XML映射文档的改进。下面是一个可以满足上面的SqlSesion调用的XML配置的映射语句。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;</div><div class="line">&lt;!DOCTYPE mapper</div><div class="line">  PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;</div><div class="line">  &quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;</div><div class="line">&lt;mapper namespace=&quot;org.mybatis.example.BlogMapper&quot;&gt;</div><div class="line">  &lt;select id=&quot;selectBlog&quot; resultType=&quot;Blog&quot;&gt;</div><div class="line">    select * from Blog where id = #&#123;id&#125;</div><div class="line">  &lt;/select&gt;</div><div class="line">&lt;/mapper&gt;</div></pre></td></tr></table></figure></p>
+<p>&emsp;&emsp;虽然这个例子对于这个简单的项目看起来很重量级，实际上他是很轻量级的。你可以在一个XML的映射文件中定义许多的映射语句，因此你可以减少很多的XML的header和doctype声明。文件余下的部分完全可以自解释。在命名空间<code>org.mybatis.example.BlogMapper</code>中定义了一个名为<code>selectBlog</code>的映射语句。他可以让你像例子中那样通过全限定名<code>org.mybatis.example.BlogMapper.selectBlog</code>调用他。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Blog blog = session.selectOne(&quot;org.mybatis.example.BlogMapper.selectBlog&quot;, 101);</div></pre></td></tr></table></figure></p>
+<p>&emsp;&emsp;注意他和调用的Java函数很相似，这么做是有原因的。这个名字可以直接映射具有相同名字的命名空间，函数名，参数，返回值都可以和select语句匹配。这样就可以通过简单的调用Mapper接口的函数来使用映射的SQL语句了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">BlogMapper mapper = session.getMapper(BlogMapper.class);</div><div class="line">Blog blog = mapper.selectBlog(101);</div></pre></td></tr></table></figure></p>
+<p>&emsp;&emsp;第二个例子有很多优势，首先他并不依赖于字符串字面量，这样他更加的安全。其次，IDE都有代码补全，当导航到映射一句的时候可以利用这个。</p>
+<blockquote>
+<p>namespace 的注意事项<br>MyBatis之前的版本<strong>Namespace</strong>是可选的，这样既没用又困惑。现在namespace是必须的，通过一个很长的，全限定名的语句来区分不同的语句。<br>正如所见，namespace绑定了接口，即使你现在不使用他们，也要遵守这个规则，以防哪天改变想法。从长远来看，使用Namespace将他放在一个Java的package名中可以使代码更清晰，提高可用性。<br>名字解析：为了减少输入，对于所有的命名配置，包括语句，result map， cache，使用下列名字解析规则：</p>
+<ul>
+<li>全限定名（例如：com.mypackage.MyMapper.selectAllThings）直接查找，找到后直接使用。</li>
+<li>短名字（例如：selectAllThings）可以使用任何明确的条目。然而如果匹配了多了个（例如：com.foo.selectAllThings and com.bar.selectAllThing），那么将会报名字模糊的错误，这个时候必须使用全限定名。</li>
+</ul>
+</blockquote>
+<p>&emsp;&emsp;对于BlogMapper还有一个小诀窍。他们的映射语句完全不需要XML配置文件，可以使用注解来代替。例如下面这个例子就可以代替XML配置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">package org.mybatis.example;</div><div class="line">public interface BlogMapper &#123;</div><div class="line">  @Select(&quot;SELECT * FROM blog WHERE id = #&#123;id&#125;&quot;)</div><div class="line">  Blog selectBlog(int id);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>&emsp;&emsp;注解相对来说更加的简洁，但是由于注解自身的限制和一些复杂语句的复杂性，如果使用复杂的SQL语句最好还是使用XML配置。<br>&emsp;&emsp;这个完全取决于你和你的团队和定义映射语句的一致性类决定使用哪个方式。也就是说你不需要仅仅选择一个。从注解到XML的迁移是很方便的，反之亦然。</p>
+<h4 id="作用域和生命周期"><a href="#作用域和生命周期" class="headerlink" title="作用域和生命周期"></a>作用域和生命周期</h4><p>&emsp;&emsp;明白我们现在所讨论的类的作用域和生命周期是很重要的。错误的使用会导致并发错误。</p>
+<blockquote>
+<p><strong>对象生命周期和依赖注入框架</strong><br>依赖注入框架可以创建线程安全的，带事务管理的SqlSession和mapper并且将它们注入到需要的Bean中，因此你可以直接忽略他的生命周期。如果要熟悉MyBatis和DI 框架的关系可以看一下MyBatis-Spring 和MyBatis-Guice两个项目</p>
+</blockquote>
+<h5 id="SqlSessionFactoryBuilder"><a href="#SqlSessionFactoryBuilder" class="headerlink" title="SqlSessionFactoryBuilder"></a>SqlSessionFactoryBuilder</h5><p>&emsp;&emsp;这个类被初始化，使用完之后可以直接丢弃了。当你创建完SqlSessionFactory之后就没必要留着他了。因此SqlSessionFactoryBuilder最好的作用域是在方法作用域中（例如一个本地变量）。可以重用SqlSessionFactoryBuilder来创建多个SqlSessionFactory实例，但是最好还是不要保留它，保证所有的XML都被解析用来做更重要的事情。</p>
+<h5 id="SqlSessionFactory"><a href="#SqlSessionFactory" class="headerlink" title="SqlSessionFactory"></a>SqlSessionFactory</h5><p>&emsp;&emsp;当SqlSesslionFactory创建了之后，就应该一直存在你的应用中。一般来说是没有理由重新创建或处理他的。在程序运行的时候最好不要多次重新构建SqlSessionFactory。如果这样做就会有坏代码的味道了。因此SqlSessionFactory的作用域最好是应用作用域。实现的方法有很多，最好的方法就是使用单例模式或者是静态单例模式。</p>
+<h5 id="SqlSession"><a href="#SqlSession" class="headerlink" title="SqlSession"></a>SqlSession</h5><p>&emsp;&emsp;每个线程都应该有自己的SqlSession。SqlSession的示例不能分享且非线程安全。因此最好的作用域是请求作用域和方法作用域。永远不要在静态域或者类实例中引用SqlSession。永远不要将SqlSession放到managed 作用域中，例如Servlet框架的HttpSession。如果使用的是web框架，可以将其放到HTTP 请求的作用域中。换句话说就是，接收到HTTP请求的时候可以打开SqlSesslion连接，响应的时候关闭。关闭SqlSession非常的重要，永远记得将其放在finally块中来关闭他。下面这个例子就是确保在finally中关闭SqlSesslion<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">SqlSession session = sqlSessionFactory.openSession();</div><div class="line">try &#123;</div><div class="line">  // do work</div><div class="line">&#125; finally &#123;</div><div class="line">  session.close();</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>&emsp;&emsp;使用这个模式可以保证你的代码关闭了数据库的连接。</p>
+<h5 id="Mapper-Instances"><a href="#Mapper-Instances" class="headerlink" title="Mapper Instances"></a>Mapper Instances</h5><p>&emsp;&emsp;Mappers是你创建用来绑定映射语句的接口。每一个mapper实例都从SqlSession中获取。因此mapper的作用域和获取他们的SqlSession的作用域是一样的。然而mapper最好的租用与是方法作用域。他们应该在一个方法使用时创建，方法结束时丢弃。他们不需要显示的关闭。和SqlSession相同，将它们放到请求作用域中也是没问题的，但是在这个层次上处理如此多的资源会很棘手。所以就简单一点，把mapper实例放到方法作用域中，下面这个例子解释了如何使用他<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">SqlSession session = sqlSessionFactory.openSession();</div><div class="line">try &#123;</div><div class="line">  BlogMapper mapper = session.getMapper(BlogMapper.class);</div><div class="line">  // do work</div><div class="line">&#125; finally &#123;</div><div class="line">  session.close();</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://mashuai.github.io/2017/03/21/mybatis/mybatis-started/" data-id="cj0j5h84k001dudr88mh8cxwf" class="article-share-link">Share</a>
+      
+        <a href="https://mashuai.github.io/2017/03/21/mybatis/mybatis-started/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Mybatis/">Mybatis</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Translate/">Translate</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-okhttp/interceptors" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/03/19/okhttp/interceptors/" class="article-date">
@@ -108,7 +180,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mashuai.github.io/2017/03/19/okhttp/interceptors/" data-id="cj0gglqu4001d1gitm13sj044" class="article-share-link">Share</a>
+      <a data-url="https://mashuai.github.io/2017/03/19/okhttp/interceptors/" data-id="cj0j5h84f001budr8i5y1jkl9" class="article-share-link">Share</a>
       
         <a href="https://mashuai.github.io/2017/03/19/okhttp/interceptors/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -180,7 +252,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mashuai.github.io/2017/03/18/okhttp/Recipes/" data-id="cj0gglqtu00191git3pdhg7uq" class="article-share-link">Share</a>
+      <a data-url="https://mashuai.github.io/2017/03/18/okhttp/Recipes/" data-id="cj0j5h84d0019udr8rec0reqz" class="article-share-link">Share</a>
       
         <a href="https://mashuai.github.io/2017/03/18/okhttp/Recipes/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -237,7 +309,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mashuai.github.io/2017/03/18/okhttp/connections/" data-id="cj0gglqtz001c1git0sjh09jf" class="article-share-link">Share</a>
+      <a data-url="https://mashuai.github.io/2017/03/18/okhttp/connections/" data-id="cj0j5h84c0018udr89h0ua4po" class="article-share-link">Share</a>
       
         <a href="https://mashuai.github.io/2017/03/18/okhttp/connections/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -290,7 +362,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mashuai.github.io/2017/03/18/okhttp/calls/" data-id="cj0gglqtv001a1gitjvj8n7vo" class="article-share-link">Share</a>
+      <a data-url="https://mashuai.github.io/2017/03/18/okhttp/calls/" data-id="cj0j5h84h001cudr88uat52sz" class="article-share-link">Share</a>
       
         <a href="https://mashuai.github.io/2017/03/18/okhttp/calls/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -343,7 +415,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mashuai.github.io/2015/11/14/为Go-Web-App-创建一个主页面/" data-id="cj0gglqrw00081git9lpnjd0j" class="article-share-link">Share</a>
+      <a data-url="https://mashuai.github.io/2015/11/14/为Go-Web-App-创建一个主页面/" data-id="cj0j5h8270005udr893nwld9o" class="article-share-link">Share</a>
       
         <a href="https://mashuai.github.io/2015/11/14/为Go-Web-App-创建一个主页面/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -407,7 +479,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mashuai.github.io/2015/11/12/http-Handler-与Go的错误处理/" data-id="cj0gglqrt00071gitra0eutu7" class="article-share-link">Share</a>
+      <a data-url="https://mashuai.github.io/2015/11/12/http-Handler-与Go的错误处理/" data-id="cj0j5h82h0008udr862jrhrdt" class="article-share-link">Share</a>
       
         <a href="https://mashuai.github.io/2015/11/12/http-Handler-与Go的错误处理/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -493,7 +565,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mashuai.github.io/2015/11/12/使用Go开发HTTP中间件/" data-id="cj0gglqs3000a1gitsnr8v9u8" class="article-share-link">Share</a>
+      <a data-url="https://mashuai.github.io/2015/11/12/使用Go开发HTTP中间件/" data-id="cj0j5h8350012udr88lnbv9ci" class="article-share-link">Share</a>
       
         <a href="https://mashuai.github.io/2015/11/12/使用Go开发HTTP中间件/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -539,7 +611,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mashuai.github.io/2015/11/12/HTTP-2-和GO/" data-id="cj0gglqrd00031gitts7ijp6n" class="article-share-link">Share</a>
+      <a data-url="https://mashuai.github.io/2015/11/12/HTTP-2-和GO/" data-id="cj0j5h8230003udr81v10mhxn" class="article-share-link">Share</a>
       
         <a href="https://mashuai.github.io/2015/11/12/HTTP-2-和GO/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -606,72 +678,12 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mashuai.github.io/2015/11/10/Go-Web-架构/" data-id="cj0gglqqu00001gitw9zxk4mg" class="article-share-link">Share</a>
+      <a data-url="https://mashuai.github.io/2015/11/10/Go-Web-架构/" data-id="cj0j5h81y0001udr88gpzi9dm" class="article-share-link">Share</a>
       
         <a href="https://mashuai.github.io/2015/11/10/Go-Web-架构/#disqus_thread" class="article-comment-link">Comments</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Architecture/">Architecture</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Go/">Go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Translate/">Translate</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Ansible-入门指南" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/11/09/Ansible-入门指南/" class="article-date">
-  <time datetime="2015-11-09T10:26:35.000Z" itemprop="datePublished">2015-11-09</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/11/09/Ansible-入门指南/">Ansible 入门指南</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p><a href="http://docs.ansible.com/ansible/intro_getting_started.html" target="_blank" rel="external">原文地址</a></p>
-<h2 id="快速入门"><a href="#快速入门" class="headerlink" title="快速入门"></a>快速入门</h2><h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>&emsp;&emsp; 现在你已经知道如何<a href="http://docs.ansible.com/ansible/intro_installation.html" target="_blank" rel="external">安装</a>Ansible了，现在可以深入并开始使用Ansible的一些命令了。<br>&emsp;&emsp; 我们开始展示的并不是Ansible强大的配置、部署、调度的功能。这些功能由其他章节要讲的Playbook来处理。<br>&emsp;&emsp; 这个章节是关于如何快速入门的。等你了解了Ansible的这些概念之后，就可以阅读<a href="http://docs.ansible.com/ansible/intro_adhoc.html" target="_blank" rel="external">特别命令简介</a>来学习更多细节，接着你就可以深入理解Playbook，并且浏览更多的有趣功能。</p>
-<h3 id="远程连接信息"><a href="#远程连接信息" class="headerlink" title="远程连接信息"></a>远程连接信息</h3><p>&emsp;&emsp; 在我们开始学习之前，理解Ansible是如何通过SSH连接到远程服务器是很重要的。<br>&emsp;&emsp; 默认情况下，如果可以，Ansible 1.3 及其后续版本会使用原生的OpenSSh来连接远程服务器。这样就可以在~/.ssh/config下开启ControPersist(一个高性能的功能),Kerbos和其他选项，例如跳板机设置。然后，如果使用了Enterprise Linux 6(Red Hat Enterprise Linux 和其衍生版本，例如CentOS) 系统作为控制机，OpenSSH的版本可能过低导致无法开启ControlPersist功能。在这些操作系统中，Ansible将会回退到使用“paramiko”，他是OpenSSH的一个高质量的Python实现。如果你想使用像Kerberized SSH 等这样的功能，那么可以使用Federa，OSX或者Ubuntu作为你的控制机，直到你使用的平台有了更新的OpenSSH，或者你可以开启加速功能。<a href="http://docs.ansible.com/ansible/playbooks_acceleration.html" target="_blank" rel="external">加速功能</a>。<br>&emsp;&emsp; 如果使用的版本小于等于1.2，那么默认使用的就是paramiko，如果想要使用原生的SSH，那么需要加上-c ssh 选项或者再配置文件中配置。<br>&emsp;&emsp; 可能偶尔在某些机器上不支持SFTP协议，虽然这种情况很少，但是也可能发生，这个时候可以在<a href="http://docs.ansible.com/ansible/intro_configuration.html" target="_blank" rel="external">配置文件</a>中切换到SCP模式。<br>&emsp;&emsp; 当需要和远程主机会话是，Ansible默认假设你使用SSH keys。Ansible鼓励使用SSH 免密码登陆，但是使用密码登陆也是可以的，在使用的时候加上参数<code>--ask-pass</code>。如果需要使用sudo权限，那么也要提供<code>--ask-sudo-pass</code>参数。<br>&emsp;&emsp; 任何管理系统运行时离被管理的系统越近越好。虽然这是个常识，但是还是值得分享的。如果你在云端使用Ansible，那么就把Ansible运行在云端。在大多数情况下，它都比直接在公共网络上运行更好。<br>&emsp;&emsp; 作为一个高级话题，Ansible并不仅仅通过SSH连接主机。连接系统是可插拔的，有很多配置选项可以用来本地管理，例如管理chroot，lxc，jail container。一个叫做“Ansible-pull”的模式可以反转系统。通过配置好的git checkout 从中央存储库pull配置文件获取系统的“phone home”。</p>
-<h3 id="第一个命令"><a href="#第一个命令" class="headerlink" title="第一个命令"></a>第一个命令</h3><p>&emsp;&emsp; 目前为止，已经安装好Ansible了，现在可以开始运行一些简单的命令了。<br>&emsp;&emsp; 编辑（或者创建）<code>/etc/ansible/hosts</code>文件，向其添加一个或者多个远程主机地址。本机的public ssh key 应该已经追加到远程主机的<code>authorized_keys</code>文件中。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">192.168.1.50</div><div class="line">aserver.example.org</div><div class="line">bserver.example.org</div></pre></td></tr></table></figure>
-<p>&emsp;&emsp; 这是一个清单文件，同样会再<a href="http://docs.ansible.com/ansible/intro_inventory.html" target="_blank" rel="external">主机清单</a>中介绍。<br>&emsp;&emsp; 假设你使用的是SSH授权方式，设置ssh angent 防止重复输入密码。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">ssh-agent bash</div><div class="line">ssh-add ~/.ssh/id_rsa</div></pre></td></tr></table></figure>
-<p>(根据你的设置，你可能需要使用<code>--private-key</code>选项来制定一个pem文件)<br>&emsp;&emsp; 现在可以ping一下所有的主机了。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ansible all -m ping</div></pre></td></tr></table></figure>
-<p>&emsp;&emsp; Ansible会想SSH那样使用你本机的用户名去连接远程机器，如果不想使用本机用户名，可以加上<code>-u</code>的选项。<br>&emsp;&emsp; 如果你想使用sudo权限，同样也可以将上<code>--sudo</code>选项。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"># as bruce</div><div class="line">$ ansible all -m ping -u bruce</div><div class="line"># as bruce sudoing to root</div><div class="line">$ ansible all -m ping -u bruce --sudo</div><div class="line"># as bruce, sudoing to batman</div><div class="line">$ ansible all -m ping -u bruce --sudo --sudo-user batman</div><div class="line"></div><div class="line"># With latest version of ansible `sudo` is deprecated so use become</div><div class="line"># as bruce, sudoing to root</div><div class="line">$ ansible all -m ping -u bruce -b</div><div class="line"># as bruce, sudoing to batman</div><div class="line">$ ansible all -m ping -u bruce -b --become-user batman</div></pre></td></tr></table></figure>
-<p>(如果你突然想改变sudo 用户，可以再配置文件中修改。传递给sudo的标记例如-H也可以在那修改。)</p>
-<p>&emsp;&emsp; 现在在你所有的节点上运行一个实时的命令。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ ansible all -a &quot;/bin/echo hello&quot;</div></pre></td></tr></table></figure>
-<p>&emsp;&emsp; 太棒了，刚刚通过Ansible与远程主机会话了。很快就可以阅读<a href="http://docs.ansible.com/ansible/intro_adhoc.html" target="_blank" rel="external">更多命令介绍</a>来学习更多的实际例子，浏览各个模块都可以做什么，以及学习Ansible <a href="http://docs.ansible.com/ansible/playbooks.html" target="_blank" rel="external">Playbooks</a>的语法。Ansible不仅仅只能用来运行命令，他还有强大的配置管理系统和部署功能。还有许多需要学习的知识，但是你现在已经有一个完全可以运行的环境了。</p>
-<h3 id="主机密钥检查"><a href="#主机密钥检查" class="headerlink" title="主机密钥检查"></a>主机密钥检查</h3><p>&emsp;&emsp; Ansible 1.2.1 及其之后的版本，默认是有主机密钥检查功能的。<br>&emsp;&emsp; 如果远程主机成新安装并且在<code>know_hosts</code>下有一个不同的key，直到修复之前，Ansible会一直返回错误。如果主机没有在<code>know_hosts</code>文件中，那么会出现提示来确认密钥。这样就会有一个你不希望的提示。<br>&emsp;&emps; 如果你知道这个功能的影响，并且希望关闭这个功能，可以修改<code>/etc/ansible/ansible.cfg</code>或者是<code>~/.ansible.cfg</code>来关闭这个功能。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">[default]</div><div class="line">host_key_checking = False</div></pre></td></tr></table></figure>
-<p>&emsp;&emsp; 同样也可以通过环境变量来修改。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ export ANSIBLE_HOST_KEY_CHECKING=False</div></pre></td></tr></table></figure>
-<p>&emsp;&emsp; 同时要注意主机密钥检查再paramiko模式中是很慢的，所以如果要使用这个功能最好使用ssh模式。<br>&emsp;&emsp; 除非Ansible的任务被标记为”no_log:True”，否则Ansible会再远程注意的syslog中记录一些有用的信息。这个稍后再做解释。<br>&emsp;&emsp; 如果要再本机开启log可以查看<a href="http://docs.ansible.com/ansible/intro_configuration.html" target="_blank" rel="external">配置章节</a>来设置“log_path”开启。企业用户可能会对<a href="http://docs.ansible.com/ansible/tower.html" target="_blank" rel="external">Ansible Tower</a>。Tower提供了一个健壮的数据库记录日志的功能，这样就可以随时通过图形界面或者REST API 来查看主机，项目，特殊的列表的日志。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mashuai.github.io/2015/11/09/Ansible-入门指南/" data-id="cj0gglqr100011git1nimz779" class="article-share-link">Share</a>
-      
-        <a href="https://mashuai.github.io/2015/11/09/Ansible-入门指南/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ansible/">Ansible</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Translate/">Translate</a></li></ul>
 
     </footer>
   </div>
@@ -695,7 +707,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ansible/">Ansible</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Architecture/">Architecture</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Go/">Go</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP-2/">HTTP/2</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Middleware/">Middleware</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OKHttp/">OKHttp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OkHttp/">OkHttp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Translate/">Translate</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vagrant/">Vagrant</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ansible/">Ansible</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Architecture/">Architecture</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Go/">Go</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP-2/">HTTP/2</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Middleware/">Middleware</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mybatis/">Mybatis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OKHttp/">OKHttp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OkHttp/">OkHttp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Translate/">Translate</a><span class="tag-list-count">12</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vagrant/">Vagrant</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -704,7 +716,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Ansible/" style="font-size: 12.5px;">Ansible</a> <a href="/tags/Architecture/" style="font-size: 10px;">Architecture</a> <a href="/tags/Go/" style="font-size: 17.5px;">Go</a> <a href="/tags/HTTP/" style="font-size: 17.5px;">HTTP</a> <a href="/tags/HTTP-2/" style="font-size: 10px;">HTTP/2</a> <a href="/tags/Java/" style="font-size: 15px;">Java</a> <a href="/tags/Middleware/" style="font-size: 10px;">Middleware</a> <a href="/tags/OKHttp/" style="font-size: 12.5px;">OKHttp</a> <a href="/tags/OkHttp/" style="font-size: 12.5px;">OkHttp</a> <a href="/tags/Translate/" style="font-size: 20px;">Translate</a> <a href="/tags/Vagrant/" style="font-size: 12.5px;">Vagrant</a>
+      <a href="/tags/Ansible/" style="font-size: 13.33px;">Ansible</a> <a href="/tags/Architecture/" style="font-size: 10px;">Architecture</a> <a href="/tags/Go/" style="font-size: 16.67px;">Go</a> <a href="/tags/HTTP/" style="font-size: 16.67px;">HTTP</a> <a href="/tags/HTTP-2/" style="font-size: 10px;">HTTP/2</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Middleware/" style="font-size: 10px;">Middleware</a> <a href="/tags/Mybatis/" style="font-size: 10px;">Mybatis</a> <a href="/tags/OKHttp/" style="font-size: 13.33px;">OKHttp</a> <a href="/tags/OkHttp/" style="font-size: 13.33px;">OkHttp</a> <a href="/tags/Translate/" style="font-size: 20px;">Translate</a> <a href="/tags/Vagrant/" style="font-size: 13.33px;">Vagrant</a>
     </div>
   </div>
 
@@ -713,7 +725,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">March 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a><span class="archive-list-count">8</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">March 2017</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a><span class="archive-list-count">8</span></li></ul>
     </div>
   </div>
 
@@ -723,6 +735,10 @@
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2017/03/21/mybatis/mybatis-started/">mybatis 入门</a>
+          </li>
         
           <li>
             <a href="/2017/03/19/okhttp/interceptors/">OKHttp 拦截器</a>
@@ -738,10 +754,6 @@
         
           <li>
             <a href="/2017/03/18/okhttp/calls/">OKHttp的调用</a>
-          </li>
-        
-          <li>
-            <a href="/2015/11/14/为Go-Web-App-创建一个主页面/">为Go Web App 创建一个主页面</a>
           </li>
         
       </ul>
