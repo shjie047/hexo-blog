@@ -3,6 +3,8 @@ date: 2017-03-24 11:32:02
 tags:
   - Git
   - Git分支
+  - Git分支原理
+  - Git commit
 ---
 
 ### 分支概要(Nutshell)
@@ -38,3 +40,4 @@ $ git commit -m 'The initial commit of my project'
 ![Interceptors](https://git-scm.com/book/en/v2/images/commits-and-parents.png)
 
 &emsp;&emsp; **Git**的分支就是一个的简单的、轻量的、可移动的、指向这些个commit的引用。
+
