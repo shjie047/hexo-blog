@@ -7,7 +7,8 @@ tags:
     - 金融
 ---
 
-[原文链接](http://java-performance.info/high-performance-money-class/)
+[原文链接](http://java-performance.info/high-performance-money-class/)    
+
 &emsp;&emsp;这篇文章主要讨论如何用Java高效实现Money类。这篇文章接上篇[double/long vs BigDecimal 在货币计算中如何选择](http://java-performance.info/bigdecimal-vs-double-in-financial-calculations/)。
 #### 介绍
 &emsp;&emsp;正如以前所介绍，在货币计算中不要使用浮点类型。我们可以使用`long`类型来代替，使用当前使用货币的最小的单位。不幸的是，这里有几个小问题：
