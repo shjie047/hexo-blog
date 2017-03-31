@@ -3,6 +3,7 @@ menu:
   Home: /
   Archives: /archives
   Projects: /projects
+  Velocity: /velocity
 rss: /atom.xml
 
 # Content
