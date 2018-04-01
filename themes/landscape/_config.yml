@@ -2,6 +2,8 @@
 menu:
   Home: /
   Archives: /archives
+  Projects: /projects
+  Velocity: /velocity
 rss: /atom.xml
 
 # Content
@@ -24,6 +26,7 @@ twitter:
 google_plus:
 fb_admins:
 fb_app_id:
+
 
 cnzz_tongji:
     enable: true
